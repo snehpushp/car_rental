@@ -6,6 +6,7 @@ import Footer from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/context/auth-context";
 import { Toaster } from "@/components/ui/sonner";
+import { APIProvider } from "@/components/maps/api-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -74,12 +75,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <Toaster position="top-right" />
+            <APIProvider>
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+              <Toaster position="top-right" />
+            </APIProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

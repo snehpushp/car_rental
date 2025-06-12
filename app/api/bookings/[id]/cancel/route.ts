@@ -1,87 +1,70 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseRouteHandler } from '@/lib/supabase/server';
 import { 
-  createSuccessResponse, 
   createErrorResponse, 
   handleApiError,
   requireRole
 } from '@/lib/utils/api-helpers';
 import { uuidSchema } from '@/lib/validation/schemas';
-import { canCancelBooking } from '@/lib/booking/validation';
-import type { Booking } from '@/lib/types/database';
+import { canCancelBooking } from '@/lib/booking/client-validation';
 import { HttpStatus, ErrorMessages } from '@/lib/types/api';
-
-interface RouteParams {
-  params: { id: string };
-}
 
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Require customer role
     const auth = await requireRole('customer');
     if (auth instanceof Response) return auth;
     
-    // Validate booking ID
     const bookingId = uuidSchema.parse(params.id);
-    
     const supabase = await getSupabaseRouteHandler();
     
-    // Get booking details
+    // First, verify the booking exists and the user owns it.
     const { data: booking, error: fetchError } = await supabase
       .from('bookings')
-      .select('*')
+      .select('status, start_date')
       .eq('id', bookingId)
-      .eq('customer_id', auth.profile.id) // Ensure customer owns the booking
+      .eq('customer_id', auth.profile.id)
       .single();
-    
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        return createErrorResponse(ErrorMessages.NOT_FOUND, HttpStatus.NOT_FOUND);
-      }
-      console.error('Database error:', fetchError);
-      return createErrorResponse('Failed to fetch booking', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    
-    if (!booking) {
+      
+    if (fetchError || !booking) {
       return createErrorResponse(ErrorMessages.NOT_FOUND, HttpStatus.NOT_FOUND);
     }
     
-    // Check if booking can be cancelled
+    // Check if the booking is in a state that allows cancellation using our business logic.
     if (!canCancelBooking(booking)) {
       return createErrorResponse(ErrorMessages.BOOKING_NOT_CANCELABLE, HttpStatus.BAD_REQUEST);
     }
     
-    // Update booking status to cancelled
-    const { data: updatedBooking, error: updateError } = await supabase
+    // Atomically update the booking status.
+    // The RLS policy should also enforce this, but being explicit here prevents race conditions
+    // and provides a clearer result from the query.
+    const { data: updatedBooking, error: updateError, count } = await supabase
       .from('bookings')
-      .update({ 
-        status: 'cancelled',
-        rejection_reason: null // Clear any previous rejection reason
-      })
+      .update({ status: 'cancelled' })
       .eq('id', bookingId)
-      .select(`
-        *,
-        car:cars!bookings_car_id_fkey(
-          id,
-          brand,
-          model,
-          image_urls
-        )
-      `)
-      .single();
-    
-    if (updateError) {
-      console.error('Database error:', updateError);
-      return createErrorResponse('Failed to cancel booking', HttpStatus.INTERNAL_SERVER_ERROR);
+      .eq('customer_id', auth.profile.id) // Ensure ownership during update
+      .in('status', ['pending', 'upcoming']) // Only update if in a cancelable state
+      .select('id')
+
+    if (updateError || count === 0) {
+      // If count is 0, it means the record wasn't updated, likely because its status changed
+      // between the fetch and the update call (race condition) or RLS failed.
+      console.error('Database error during cancellation:', updateError);
+      return createErrorResponse(
+        'Failed to cancel booking. The booking may have been updated or is no longer cancelable.', 
+        HttpStatus.CONFLICT
+      );
     }
-    
-    return createSuccessResponse(updatedBooking, 'Booking cancelled successfully');
+
+    return NextResponse.json({ 
+      success: true, 
+      data: { id: updatedBooking?.[0]?.id }, 
+      message: 'Booking cancelled successfully' 
+    });
     
   } catch (error) {
-    console.error('API Error:', error);
     return handleApiError(error);
   }
 } 

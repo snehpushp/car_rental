@@ -37,19 +37,15 @@ export interface Car {
   total_reviews?: number;
 }
 
-export interface Booking {
-  id: string;
-  created_at: string;
+export interface Booking extends Base {
   customer_id: string;
   car_id: string;
   start_date: string;
   end_date: string;
   total_price: number;
   status: BookingStatus;
-  rejection_reason: string | null;
-  // Joined data
-  customer?: Profile;
-  car?: Car;
+  rejection_reason?: string;
+  car?: Car & { reviews?: Review[] };
 }
 
 export interface Review {
@@ -132,7 +128,7 @@ export interface CarCreateRequest {
 }
 
 export interface ReviewCreateRequest {
-  booking_id: string;
   rating: number;
   comment?: string;
+  booking_id: string;
 } 
