@@ -5,13 +5,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuthContext } from '@/lib/context/auth-context';
+import { RouteChecker } from '@/lib/config/routes';
+import { toast } from 'sonner';
 
 const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -31,8 +34,9 @@ type SignupForm = z.infer<typeof signupSchema>;
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const router = useRouter();
-  const { signup, loading } = useAuthContext();
+  const { signup, isLoading } = useAuthContext();
 
   const {
     register,
@@ -50,23 +54,22 @@ export function SignupForm() {
   const selectedRole = watch('role');
 
   const onSubmit = async (data: SignupForm) => {
-    try {
-      await signup({
-        email: data.email,
-        password: data.password,
-        fullName: data.fullName,
-        role: data.role
-      });
+    // Clear any previous form errors
+    setFormError(null);
+    
+    const result = await signup(data.email, data.password, data.fullName, data.role);
+    
+    if (result.success) {
+      toast.success('Account created successfully!');
       
-      // Redirect based on role
-      if (data.role === 'owner') {
-        router.push('/owner/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
-    } catch (error) {
-      // Error is handled by the auth hook
-      console.error('Signup error:', error);
+      // Redirect based on role using centralized route logic
+      const redirectPath = RouteChecker.getDefaultRedirectPath(data.role);
+      router.push(redirectPath);
+    } else {
+      // Show error inside the form instead of just toast
+      setFormError(result.error || 'Account creation failed. Please try again.');
+      // Still show toast for immediate feedback, but form error is primary
+      toast.error(result.error || 'Signup failed');
     }
   };
 
@@ -80,6 +83,15 @@ export function SignupForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {formError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {formError}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -87,7 +99,7 @@ export function SignupForm() {
               type="text"
               placeholder="Enter your full name"
               {...register('fullName')}
-              disabled={loading}
+              disabled={isLoading}
             />
             {errors.fullName && (
               <p className="text-sm text-red-500">{errors.fullName.message}</p>
@@ -101,7 +113,7 @@ export function SignupForm() {
               type="email"
               placeholder="Enter your email"
               {...register('email')}
-              disabled={loading}
+              disabled={isLoading}
             />
             {errors.email && (
               <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -116,15 +128,15 @@ export function SignupForm() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 {...register('password')}
-                disabled={loading}
+                disabled={isLoading}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={isLoading}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -146,7 +158,7 @@ export function SignupForm() {
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm your password"
                 {...register('confirmPassword')}
-                disabled={loading}
+                disabled={isLoading}
               />
               <Button
                 type="button"
@@ -154,7 +166,7 @@ export function SignupForm() {
                 size="sm"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                disabled={loading}
+                disabled={isLoading}
               >
                 {showConfirmPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -174,7 +186,7 @@ export function SignupForm() {
               value={selectedRole}
               onValueChange={(value) => setValue('role', value as 'customer' | 'owner')}
               className="flex flex-col space-y-2"
-              disabled={loading}
+              disabled={isLoading}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="customer" id="customer" />
@@ -197,9 +209,9 @@ export function SignupForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating Account...

@@ -1,48 +1,47 @@
 'use client';
 
+import { RouteChecker } from '@/lib/config/routes';
+
 /**
- * Check if there's a potential Supabase session cookie on the client side
- * This helps avoid unnecessary API calls when user is clearly not authenticated
+ * Check if authentication cookies are present
+ * This helps determine if we should attempt to fetch user data
  */
-export function hasAuthCookie(): boolean {
-  if (typeof window === 'undefined') return false;
+export function hasAuthCookies(): boolean {
+  if (typeof document === 'undefined') return false;
   
-  // Check for Supabase auth cookies
   const cookies = document.cookie;
   
-  // Look for common Supabase auth cookie patterns
-  const authCookiePatterns = [
-    'sb-',
-    'supabase-auth-token',
-    'auth-token'
-  ];
+  // Check for Supabase auth cookies more specifically
+  // Supabase typically creates cookies like: sb-<project-ref>-auth-token
+  const hasSupabaseCookies = cookies.split(';').some(cookie => {
+    const trimmed = cookie.trim();
+    return trimmed.startsWith('sb-') && 
+           (trimmed.includes('-auth-token') || trimmed.includes('access-token') || trimmed.includes('refresh-token'));
+  });
   
-  return authCookiePatterns.some(pattern => 
-    cookies.includes(pattern)
-  );
+  return hasSupabaseCookies;
 }
 
 /**
- * Check if we're on a public route that doesn't require authentication
+ * Check if the current route is public (doesn't require authentication)
+ * @deprecated Use RouteChecker.isPublicRoute() instead
  */
 export function isPublicRoute(pathname: string): boolean {
-  const publicRoutes = [
-    '/',
-    '/cars',
-    '/auth/login',
-    '/auth/signup',
-    '/about',
-    '/how-it-works',
-    '/host',
-    '/contact',
-    '/privacy',
-    '/terms'
-  ];
+  return RouteChecker.isPublicRoute(pathname);
+}
 
-  return publicRoutes.some(route => 
-    pathname === route || 
-    pathname.startsWith('/cars/') ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api/')
-  );
+/**
+ * Check if the current route is an auth route (login/signup)
+ * @deprecated Use RouteChecker.isAuthRoute() instead
+ */
+export function isAuthRoute(pathname: string): boolean {
+  return RouteChecker.isAuthRoute(pathname);
+}
+
+/**
+ * Check if the current route is protected (requires authentication)
+ * @deprecated Use RouteChecker.isProtectedRoute() instead
+ */
+export function isProtectedRoute(pathname: string): boolean {
+  return RouteChecker.isProtectedRoute(pathname);
 } 

@@ -1,189 +1,155 @@
 'use client';
 
-import useSWR from 'swr';
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { toast } from 'sonner';
-import { hasAuthCookie, isPublicRoute } from '@/lib/utils/client-auth';
-import type { 
-  AuthResponse, 
-  LoginCredentials, 
-  SignupData, 
-  User, 
-  Session 
-} from '@/lib/types/auth';
+import useSWR from 'swr';
+import { getSupabaseClient } from '@/lib/supabase/client';
+import { hasAuthCookies } from '@/lib/utils/client-auth';
+import { API_ROUTES } from '@/lib/config/routes';
+import type { User, AuthOperationResult } from '@/lib/types/auth';
 
-const fetcher = async (url: string): Promise<AuthResponse> => {
-  const res = await fetch(url, {
+// Global Supabase client instance
+const supabase = getSupabaseClient();
+
+// Fetcher function for user data
+const fetchUser = async (): Promise<{ user: User | null; session: any }> => {
+  const response = await fetch(API_ROUTES.AUTH.USER, {
     credentials: 'include',
     headers: {
-      'Content-Type': 'application/json',
-    },
+      'Cache-Control': 'no-cache'
+    }
   });
   
-  if (!res.ok) {
-    if (res.status === 401) {
+  if (!response.ok) {
+    if (response.status === 401) {
+      // Not authenticated - return null user
       return { user: null, session: null };
     }
-    throw new Error('Failed to fetch user data');
+    throw new Error('Failed to fetch user');
   }
   
-  return res.json();
+  return response.json();
 };
 
 export function useAuth() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [shouldFetch, setShouldFetch] = useState(false);
-  const pathname = usePathname();
-
-  // Determine if we should fetch user data
+  // Track if we're hydrated to prevent server/client mismatch
+  const [isHydrated, setIsHydrated] = useState(false);
+  
   useEffect(() => {
-    const hasAuth = hasAuthCookie();
-    const isPublic = isPublicRoute(pathname);
-    
-    // Fetch if:
-    // 1. We have auth cookies (potential session)
-    // 2. We're on a protected route (need to verify access)
-    setShouldFetch(hasAuth || !isPublic);
-  }, [pathname]);
+    setIsHydrated(true);
+  }, []);
 
-  const { data, error: swrError, mutate } = useSWR<AuthResponse>(
-    shouldFetch ? '/api/auth/user' : null,
-    fetcher,
+  // Only fetch user data if hydrated and has auth cookies
+  const shouldFetch = isHydrated && hasAuthCookies();
+
+  const { data, error, mutate, isLoading } = useSWR(
+    shouldFetch ? 'auth-user' : null,
+    fetchUser,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
-      dedupingInterval: 60000,
-      // Don't retry if we're on a public route and have no auth cookies
+      dedupingInterval: 30000, // 30 seconds
+      errorRetryCount: 1,
       shouldRetryOnError: (error) => {
-        if (!hasAuthCookie() && isPublicRoute(pathname)) {
-          return false;
-        }
-        return true;
+        // Don't retry on 401 errors (not authenticated)
+        return !error.message.includes('401');
       }
     }
   );
 
-  const user: User | null = data?.user || null;
-  const session: Session | null = data?.session || null;
-  const isLoading = shouldFetch && !data && !swrError;
-
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (email: string, password: string): Promise<AuthOperationResult> => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetch('/api/auth/login', {
+      const response = await fetch(API_ROUTES.AUTH.LOGIN, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ email, password })
       });
 
-      const result = await res.json();
+      const result = await response.json();
 
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error(result.error || 'Login failed');
       }
 
-      // Enable fetching after successful login
-      setShouldFetch(true);
-      
-      // Revalidate user data
+      // Force revalidate user data after successful login
       await mutate();
-      toast.success('Login successful!');
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setError(message);
-      toast.error(message);
-      throw err;
-    } finally {
-      setLoading(false);
+      
+      return { success: true, data: result };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Login failed' 
+      };
     }
   };
 
-  const signup = async (data: SignupData) => {
+  const signup = async (
+    email: string, 
+    password: string, 
+    fullName: string, 
+    role: 'customer' | 'owner'
+  ): Promise<AuthOperationResult> => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetch('/api/auth/signup', {
+      const response = await fetch(API_ROUTES.AUTH.SIGNUP, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify({ email, password, fullName, role })
       });
 
-      const result = await res.json();
+      const result = await response.json();
 
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error(result.error || 'Signup failed');
       }
 
-      toast.success('Account created successfully!');
+      // Force revalidate user data after successful signup
+      await mutate();
       
-      // If no email verification is required, automatically log in
-      if (!result.requiresVerification) {
-        setShouldFetch(true);
-        await mutate();
-      }
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Signup failed';
-      setError(message);
-      toast.error(message);
-      throw err;
-    } finally {
-      setLoading(false);
+      return { success: true, data: result };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Signup failed' 
+      };
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<AuthOperationResult> => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetch('/api/auth/logout', {
+      const response = await fetch(API_ROUTES.AUTH.LOGOUT, {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'include'
       });
 
-      if (!res.ok) {
-        const result = await res.json();
+      if (!response.ok) {
+        const result = await response.json();
         throw new Error(result.error || 'Logout failed');
       }
 
-      // Disable fetching after logout
-      setShouldFetch(false);
-      
-      // Clear SWR cache and revalidate
+      // Clear user data after successful logout
       await mutate({ user: null, session: null }, false);
-      toast.success('Logged out successfully');
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Logout failed';
-      setError(message);
-      toast.error(message);
-      throw err;
-    } finally {
-      setLoading(false);
+      
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Logout failed' 
+      };
     }
   };
 
   return {
-    user,
-    session,
-    loading: isLoading || loading,
-    error: error || (swrError ? 'Failed to load user data' : null),
+    user: data?.user || null,
+    session: data?.session || null,
+    // Show loading only when hydrated and actually loading
+    isLoading: shouldFetch ? isLoading : false,
+    // Show loading state when not yet hydrated to prevent flash
+    isHydrated,
+    error,
     login,
     signup,
     logout,
-    mutate,
+    mutate
   };
 } 

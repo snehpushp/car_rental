@@ -12,10 +12,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthContext } from "@/lib/context/auth-context";
 import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/config/routes";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, loading, logout } = useAuthContext();
+  const { user, isLoading, isHydrated, logout } = useAuthContext();
   const router = useRouter();
 
   const mainNavigation = [
@@ -30,17 +31,17 @@ const Header = () => {
     
     if (user.role === 'owner') {
       return [
-        { name: "Dashboard", href: "/owner/dashboard", icon: Settings, description: "Owner dashboard" },
+        { name: "Dashboard", href: ROUTES.OWNER_DASHBOARD, icon: Settings, description: "Owner dashboard" },
         { name: "My Cars", href: "/owner/cars", icon: Car, description: "Manage your cars" },
         { name: "Bookings", href: "/owner/bookings", icon: Calendar, description: "Manage bookings" },
-        { name: "Profile", href: "/dashboard/profile", icon: UserCircle, description: "Account settings" },
+        { name: "Profile", href: ROUTES.OWNER_PROFILE, icon: UserCircle, description: "Account settings" },
       ];
     } else {
       return [
-        { name: "Dashboard", href: "/dashboard", icon: Settings, description: "Manage your account" },
+        { name: "Dashboard", href: ROUTES.CUSTOMER_DASHBOARD, icon: Settings, description: "Manage your account" },
         { name: "My Bookings", href: "/dashboard/bookings", icon: Calendar, description: "View your reservations" },
         { name: "Wishlist", href: "/dashboard/wishlist", icon: Heart, description: "Saved cars" },
-        { name: "Profile", href: "/dashboard/profile", icon: UserCircle, description: "Account settings" },
+        { name: "Profile", href: ROUTES.PROFILE, icon: UserCircle, description: "Account settings" },
       ];
     }
   };
@@ -48,12 +49,10 @@ const Header = () => {
   const userNavigation = getNavigationForRole();
 
   const handleSignOut = async () => {
-    try {
-      await logout();
+    const result = await logout();
+    if (result.success) {
       setIsOpen(false);
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
+      router.push(ROUTES.HOME);
     }
   };
 
@@ -66,7 +65,19 @@ const Header = () => {
   };
 
   const renderAuthSection = () => {
-    if (loading) {
+    // Show login button until hydrated to prevent hydration mismatch
+    if (!isHydrated) {
+      return (
+        <Button size="sm" asChild className="font-medium transition-all duration-200">
+          <Link href={ROUTES.LOGIN} className="flex items-center space-x-2">
+            <HiLogin className="h-4 w-4" />
+            <span>Login</span>
+          </Link>
+        </Button>
+      );
+    }
+
+    if (isLoading) {
       return (
         <div className="flex items-center space-x-2">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -131,7 +142,7 @@ const Header = () => {
 
     return (
       <Button size="sm" asChild className="font-medium transition-all duration-200">
-        <Link href="/auth/login" className="flex items-center space-x-2">
+        <Link href={ROUTES.LOGIN} className="flex items-center space-x-2">
           <HiLogin className="h-4 w-4" />
           <span>Login</span>
         </Link>
@@ -140,7 +151,21 @@ const Header = () => {
   };
 
   const renderMobileAuthSection = () => {
-    if (loading) {
+    // Show login button until hydrated to prevent hydration mismatch
+    if (!isHydrated) {
+      return (
+        <SheetClose asChild>
+          <Button asChild className="w-full font-medium">
+            <Link href="/auth/login" className="flex items-center justify-center space-x-2">
+              <HiLogin className="h-4 w-4" />
+              <span>Login</span>
+            </Link>
+          </Button>
+        </SheetClose>
+      );
+    }
+
+    if (isLoading) {
       return (
         <div className="flex items-center justify-center space-x-2 py-4">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

@@ -1,7 +1,6 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getSupabaseRouteHandler } from '@/lib/supabase/server';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -10,8 +9,7 @@ const loginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = await getSupabaseRouteHandler();
     
     // Parse and validate request body
     const body = await request.json();

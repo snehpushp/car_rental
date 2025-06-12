@@ -18,6 +18,12 @@ export interface AuthResponse {
   session: Session | null;
 }
 
+export interface AuthOperationResult {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
 export interface AuthError {
   error: string;
   details?: any;

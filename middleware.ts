@@ -1,79 +1,64 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextRequest, NextResponse } from 'next/server';
+import { RouteChecker, ROUTES } from '@/lib/config/routes';
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req: request, res });
   const { pathname } = request.nextUrl;
 
-  // Get the session
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // Public routes that don't require authentication
-  const publicRoutes = [
-    '/',
-    '/cars',
-    '/auth/login',
-    '/auth/signup',
-    '/api/auth/login',
-    '/api/auth/signup',
-    '/api/auth/logout',
-    '/api/auth/user'
-  ];
-
-  // Check if the current path is public
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname === route || pathname.startsWith('/cars/') || pathname.startsWith('/_next')
-  );
-
-  // If it's a public route, allow access
-  if (isPublicRoute) {
+  // Skip middleware for system routes (static files, API routes, etc.)
+  if (RouteChecker.isSystemRoute(pathname)) {
     return res;
   }
 
-  // If no session exists, redirect to login
-  if (!session) {
-    const redirectUrl = new URL('/auth/login', request.url);
-    redirectUrl.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(redirectUrl);
-  }
+  try {
+    // Get the session
+    const { data: { session }, error } = await supabase.auth.getSession();
 
-  // Get user profile to check role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', session.user.id)
-    .single();
-
-  if (!profile) {
-    // If profile doesn't exist, redirect to login
-    return NextResponse.redirect(new URL('/auth/login', request.url));
-  }
-
-  // Role-based route protection
-  if (pathname.startsWith('/owner')) {
-    // Owner routes - only accessible by owners
-    if (profile.role !== 'owner') {
-      return NextResponse.redirect(new URL('/', request.url));
+    // If there's an error getting session, allow access to public and auth routes
+    if (error) {
+      console.error('Session error in middleware:', error);
+      if (RouteChecker.isPublicRoute(pathname) || RouteChecker.isAuthRoute(pathname)) {
+        return res;
+      }
+      // Redirect to login for protected routes when there's a session error
+      return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
     }
-  } else if (pathname.startsWith('/dashboard')) {
-    // Customer dashboard - only accessible by customers
-    if (profile.role !== 'customer') {
-      return NextResponse.redirect(new URL('/owner/dashboard', request.url));
-    }
-  }
 
-  // API route protection
-  if (pathname.startsWith('/api/owner')) {
-    if (profile.role !== 'owner') {
-      return NextResponse.json(
-        { error: 'Unauthorized: Owner access required' },
-        { status: 403 }
-      );
+    // If user is authenticated and trying to access auth pages, redirect to appropriate dashboard
+    if (session && session.user && RouteChecker.isAuthRoute(pathname)) {
+      // We don't have role info in middleware, so redirect to home and let client handle it
+      return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
     }
-  }
 
-  return res;
+    // If it's a public route, allow access
+    if (RouteChecker.isPublicRoute(pathname)) {
+      return res;
+    }
+
+    // If it's an auth route and user is not authenticated, allow access
+    if (RouteChecker.isAuthRoute(pathname)) {
+      return res;
+    }
+
+    // If no session exists for protected routes, redirect to login
+    if (!session || !session.user) {
+      if (RouteChecker.isProtectedRoute(pathname)) {
+        return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
+      }
+    }
+
+    // For role-specific routes, we'll check the role in the actual page/API route
+    // This avoids unnecessary database calls in middleware
+    // The role checking will be done using the role-check utility
+
+    return res;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    // On error, allow access to prevent blocking the app
+    return res;
+  }
 }
 
 export const config = {
@@ -85,6 +70,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public (public files)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 }; 
