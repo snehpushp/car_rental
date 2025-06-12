@@ -23,6 +23,42 @@ export const carCreateSchema = z.object({
   image_urls: z.array(z.string().url('Invalid image URL')).optional(),
 });
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+export const carFormSchema = z.object({
+    brand: z.string().min(2, "Brand must be at least 2 characters."),
+    model: z.string().min(2, "Model must be at least 2 characters."),
+    year: z.number().int().min(1980, "Year must be 1980 or later.").max(new Date().getFullYear() + 1),
+    type: z.string().min(1, "Please select a car type."),
+    fuel_type: z.string().min(1, "Please select a fuel type."),
+    transmission: z.string().min(1, "Please select a transmission type."),
+    price_per_day: z.coerce.number().positive("Price must be a positive number."),
+    location_text: z.string().min(5, "Location is required."),
+    latitude: z.number(),
+    longitude: z.number(),
+    description: z.string().min(20, "Description must be at least 20 characters.").max(1000),
+    specs: z.object({
+        engine: z.string().min(1, "Engine spec is required."),
+        horsepower: z.coerce.number().int().positive("Horsepower must be a positive number."),
+        seats: z.coerce.number().int().min(1, "Seats must be at least 1.").max(10),
+        doors: z.coerce.number().int().min(2, "Doors must be at least 2.").max(5),
+    }),
+    image_files: z
+    .custom<File[]>()
+    .refine((files) => files?.length > 0, "At least one image is required.")
+    .refine((files) => files?.length <= 5, `Maximum 5 images are allowed.`)
+    .refine(
+      (files) => Array.from(files).every((file) => file.size <= MAX_FILE_SIZE),
+      `Each file size should be less than 5 MB.`
+    )
+    .refine(
+      (files) => Array.from(files).every((file) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      "Only .jpg, .jpeg, .png and .webp formats are supported."
+    ),
+    image_urls: z.array(z.string().url()).optional(), // For existing images when editing
+});
+
 export const carUpdateSchema = carCreateSchema.partial();
 
 export const carFiltersSchema = z.object({

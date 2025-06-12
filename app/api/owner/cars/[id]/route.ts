@@ -72,6 +72,51 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteParams
+) {
+  try {
+    const auth = await requireRole('owner');
+    if (auth instanceof Response) return auth;
+
+    const carId = uuidSchema.parse(params.id);
+    const body = await request.json();
+    
+    // We only expect `is_available` in the body for this endpoint
+    if (typeof body.is_available !== 'boolean') {
+      return createErrorResponse('Invalid request body. "is_available" (boolean) is required.', HttpStatus.BAD_REQUEST);
+    }
+
+    const supabase = await getSupabaseRouteHandler();
+
+    const { data: updatedCar, error } = await supabase
+      .from('cars')
+      .update({ is_available: body.is_available })
+      .eq('id', carId)
+      .eq('owner_id', auth.profile.id)
+      .select('id, is_available')
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') { // PostgREST error for no rows found
+        return createErrorResponse(ErrorMessages.NOT_FOUND, HttpStatus.NOT_FOUND);
+      }
+      console.error('Database error:', error);
+      return createErrorResponse('Failed to update car availability', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    if (!updatedCar) {
+        return createErrorResponse(ErrorMessages.NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    return createSuccessResponse(updatedCar, `Car has been successfully ${body.is_available ? 'listed' : 'unlisted'}.`);
+
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: RouteParams
