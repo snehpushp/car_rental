@@ -4,14 +4,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car } from '@/lib/types/database';
-import { Fuel, Gauge, Heart, MapPin, Users, Wrench } from 'lucide-react';
+import { Fuel, Gauge, MapPin, Users, Wrench } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import { WishlistButton } from '../wishlist/wishlist-button';
+import { User } from '@/lib/types/auth';
 
 interface CarCardProps {
   car: Car;
+  user: User | null;
 }
 
-export function CarCard({ car }: CarCardProps) {
+export function CarCard({ car, user }: CarCardProps) {
   return (
     <Card className="group overflow-hidden rounded-lg shadow-sm transition-transform duration-300 hover:scale-[1.02] hover:shadow-md">
       <CardHeader className="relative p-0">
@@ -25,10 +28,11 @@ export function CarCard({ car }: CarCardProps) {
           />
         </Link>
         <div className="absolute right-3 top-3">
-          <Button size="icon" variant="outline" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white">
-            <Heart className="h-5 w-5 text-gray-500" />
-            <span className="sr-only">Add to wishlist</span>
-          </Button>
+          <WishlistButton 
+            carId={car.id}
+            initialIsWishlisted={!!car.is_wishlisted}
+            userId={user?.id || null}
+          />
         </div>
         <Badge variant="secondary" className="absolute bottom-3 left-3">
           {car.type}

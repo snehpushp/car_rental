@@ -35,6 +35,7 @@ export interface Car {
   reviews?: Review[];
   average_rating?: number;
   total_reviews?: number;
+  is_wishlisted?: boolean;
 }
 
 export interface Booking extends Base {

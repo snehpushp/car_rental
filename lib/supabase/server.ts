@@ -1,12 +1,22 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
+import { createServerComponentClient, createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient as createGenericClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+
+/**
+ * Create Supabase client for Server Components.
+ */
+export const createClient = () => {
+  const cookieStore = cookies();
+  return createServerComponentClient({
+    cookies: () => cookieStore,
+  });
+};
 
 /**
  * Get Supabase client for API routes with user context
  */
-export async function getSupabaseRouteHandler() {
-  const cookieStore = await cookies();
+export const getSupabaseRouteHandler = () => {
+  const cookieStore = cookies();
   return createRouteHandlerClient({ cookies: () => cookieStore });
 }
 
@@ -18,7 +28,7 @@ export function getSupabaseServiceRole() {
     throw new Error('Missing Supabase environment variables');
   }
 
-  return createClient(
+  return createGenericClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     {

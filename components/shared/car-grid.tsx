@@ -1,13 +1,15 @@
 import { Car } from '@/lib/types/database';
 import { CarCard, CarCardSkeleton } from './car-card';
+import { User } from '@/lib/types/auth';
 
 interface CarGridProps {
   cars: Car[];
   isLoading?: boolean;
   skeletonCount?: number;
+  user: User | null;
 }
 
-export function CarGrid({ cars, isLoading = false, skeletonCount = 8 }: CarGridProps) {
+export function CarGrid({ cars, isLoading = false, skeletonCount = 8, user }: CarGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -30,7 +32,7 @@ export function CarGrid({ cars, isLoading = false, skeletonCount = 8 }: CarGridP
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {cars.map((car) => (
-        <CarCard key={car.id} car={car} />
+        <CarCard key={car.id} car={car} user={user} />
       ))}
     </div>
   );

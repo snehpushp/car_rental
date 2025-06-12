@@ -12,12 +12,14 @@ import { CarsMap } from '@/components/maps/cars-map';
 import { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useAuthContext } from '@/lib/context/auth-context';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function BrowseCarsPage() {
     const searchParams = useSearchParams();
     const queryString = searchParams.toString();
+    const { user } = useAuthContext();
   
     const { data, error, isLoading } = useSWR<PaginatedResponse<Car>>(
       `/api/cars?${queryString}`,
@@ -55,8 +57,7 @@ export default function BrowseCarsPage() {
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
                     <div className={showMap ? "lg:col-span-7" : "lg:col-span-12"}>
-                        {/* TODO: Add hover effect to highlight car on map */}
-                        <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} />
+                        <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} user={user} />
                     </div>
                     {showMap && (
                         <div className="lg:col-span-5">

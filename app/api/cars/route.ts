@@ -20,6 +20,23 @@ export async function GET(request: NextRequest) {
     const filters = validateQueryParams(carFiltersSchema, searchParams);
     
     const supabase = await getSupabaseRouteHandler();
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+
+    let wishlistedCarIds: Set<string> = new Set();
+    if (userId) {
+      const { data: wishlistData, error: wishlistError } = await supabase
+        .from('wishlists')
+        .select('car_id')
+        .eq('customer_id', userId);
+      
+      if (wishlistError) {
+        console.error('Error fetching wishlist:', wishlistError);
+        // Not returning an error, just proceeding without wishlist data
+      } else {
+        wishlistedCarIds = new Set(wishlistData.map(w => w.car_id));
+      }
+    }
     
     // Build base query with joins
     let query = supabase
@@ -119,8 +136,8 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // Calculate average ratings and review counts
-    const carsWithRatings: Car[] = cars.map(car => {
+    // Calculate average ratings, review counts, and wishlist status
+    const carsWithDetails: Car[] = cars.map(car => {
       const reviews = car.reviews || [];
       const total_reviews = reviews.length;
       const average_rating = total_reviews > 0 
@@ -131,17 +148,18 @@ export async function GET(request: NextRequest) {
         ...car,
         reviews: undefined, // Remove reviews array to keep response clean
         average_rating: Math.round(average_rating * 10) / 10, // Round to 1 decimal place
-        total_reviews
+        total_reviews,
+        is_wishlisted: wishlistedCarIds.has(car.id)
       };
     });
     
     // Apply rating-based sorting if specified (after calculating ratings)
     if (filters.sort_by === 'rating_desc') {
-      carsWithRatings.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+      carsWithDetails.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
     }
     
     const response: PaginatedResponse<Car> = {
-      data: carsWithRatings,
+      data: carsWithDetails,
       pagination: createPaginationMeta(page, limit, count)
     };
     
