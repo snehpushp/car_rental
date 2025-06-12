@@ -19,6 +19,8 @@ General preferences:
 
 - Follow the user's requirements carefully & to the letter.
 - Do not update @package.json or @tsconfig.json files directly, instead use the npx commands to update them.
+- Absolutely do not update any tasks content except marking them as completed.
+- For creating or writing in files, do not use terminal commands. If you don't have permission to write in a file, ask me to do it and share the content as text.
 - Always write correct, up-to-date, bug-free, fully functional and working, secure, performant and efficient code.
 - Focus on readability over being performant.
 - Fully implement all requested functionality.
