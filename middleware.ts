@@ -7,58 +7,36 @@ export async function middleware(request: NextRequest) {
   const supabase = createMiddlewareClient({ req: request, res });
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for system routes (static files, API routes, etc.)
-  if (RouteChecker.isSystemRoute(pathname)) {
+  // This is the crucial step to refresh the session cookie.
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // If it's an API route, we just wanted to refresh the session.
+  // The actual route protection will be handled in the API route itself.
+  // So, we can return the response and stop the middleware chain.
+  if (RouteChecker.isApiRoute(pathname)) {
     return res;
   }
 
-  try {
-    // Get the session
-    const { data: { session }, error } = await supabase.auth.getSession();
-
-    // If there's an error getting session, allow access to public and auth routes
-    if (error) {
-      console.error('Session error in middleware:', error);
-      if (RouteChecker.isPublicRoute(pathname) || RouteChecker.isAuthRoute(pathname)) {
-        return res;
-      }
-      // Redirect to login for protected routes when there's a session error
-      return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
-    }
-
-    // If user is authenticated and trying to access auth pages, redirect to appropriate dashboard
-    if (session && session.user && RouteChecker.isAuthRoute(pathname)) {
-      // We don't have role info in middleware, so redirect to home and let client handle it
-      return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
-    }
-
-    // If it's a public route, allow access
-    if (RouteChecker.isPublicRoute(pathname)) {
+  // If the user is not authenticated...
+  if (!session) {
+    // and they are trying to access a public or authentication route, allow them.
+    if (RouteChecker.isPublicRoute(pathname) || RouteChecker.isAuthRoute(pathname)) {
       return res;
     }
-
-    // If it's an auth route and user is not authenticated, allow access
-    if (RouteChecker.isAuthRoute(pathname)) {
-      return res;
-    }
-
-    // If no session exists for protected routes, redirect to login
-    if (!session || !session.user) {
-      if (RouteChecker.isProtectedRoute(pathname)) {
-        return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
-      }
-    }
-
-    // For role-specific routes, we'll check the role in the actual page/API route
-    // This avoids unnecessary database calls in middleware
-    // The role checking will be done using the role-check utility
-
-    return res;
-  } catch (error) {
-    console.error('Middleware error:', error);
-    // On error, allow access to prevent blocking the app
-    return res;
+    // Otherwise, redirect them to the login page.
+    return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
   }
+
+  // If the user is authenticated and they try to access an auth route (e.g., /login),
+  // redirect them to the homepage.
+  if (RouteChecker.isAuthRoute(pathname)) {
+    return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
+  }
+
+  // For all other cases (authenticated user on a protected or public route),
+  // allow the request to proceed. Role-based access control is handled
+  // within the specific pages or API routes, not in the middleware.
+  return res;
 }
 
 export const config = {
@@ -68,8 +46,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public (public files)
+     * - sitemap.xml
+     * - robots.txt
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 }; 

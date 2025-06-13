@@ -71,6 +71,9 @@ export const SYSTEM_ROUTES = [
  * Route checking utilities
  */
 export class RouteChecker {
+  private static readonly API_AUTH_PREFIX = '/api/auth';
+  private static readonly API_PREFIX = '/api';
+
   /**
    * Check if a route is public (accessible to everyone)
    */
@@ -188,6 +191,10 @@ export class RouteChecker {
       return `${loginPath}?redirectTo=${encodeURIComponent(returnTo)}`;
     }
     return loginPath;
+  }
+
+  public static isApiRoute = (pathname: string): boolean => {
+    return pathname.startsWith(this.API_PREFIX);
   }
 }
 
