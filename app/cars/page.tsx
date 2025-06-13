@@ -4,11 +4,11 @@ import { CarGrid } from '@/components/shared/car-grid';
 import { PageSection } from '@/components/layout/page-section';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { Car, PaginatedResponse, Wishlist as WishlistItem } from '@/lib/types/database';
+import { Car, PaginatedResponse } from '@/lib/types/database';
 import { FilterSidebar } from '@/components/cars/filter-sidebar';
 import { Pagination } from '@/components/shared/pagination';
 import { CarSortOptions } from '@/components/cars/car-sort-options';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useAuthContext } from '@/lib/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
@@ -17,29 +17,22 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function BrowseCarsPage() {
     const searchParams = useSearchParams();
-    const queryString = searchParams.toString();
     const { user } = useAuthContext();
     const [showFilters, setShowFilters] = useState(false);
+
+    // Create query string with limit of 12
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has('limit')) {
+        params.set('limit', '12');
+    }
+    const queryString = params.toString();
   
     const { data: carsResponse, error, isLoading } = useSWR<{ data: PaginatedResponse<Car>}>(
       `/api/cars?${queryString}`,
       fetcher
     );
 
-    const { data: wishlistData, isLoading: isWishlistLoading } = useSWR<{ data: PaginatedResponse<WishlistItem> }>(
-        user ? '/api/wishlist?limit=100' : null,
-        fetcher
-    );
-
-    const wishlistedCarIds = useMemo(() => 
-        new Set(wishlistData?.data?.data?.map((item) => item.car_id) ?? [])
-    , [wishlistData]);
-
     const cars = carsResponse?.data?.data ?? [];
-    const wishlistedCars = useMemo(() => 
-        cars.filter((car) => wishlistedCarIds.has(car.id))
-    , [cars, wishlistedCarIds]);
-
     const pagination = carsResponse?.data?.pagination;
     const totalResults = carsResponse?.data?.pagination?.total ?? 0;
 
@@ -131,26 +124,8 @@ export default function BrowseCarsPage() {
                             </div>
 
                             {/* Results Content */}
-                            <div className="space-y-8">
-                                {user && wishlistedCars.length > 0 && (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3">
-                                            <h2 className="text-2xl font-bold text-foreground">From Your Wishlist</h2>
-                                            <div className="h-px flex-1 bg-border"></div>
-                                        </div>
-                                        <CarGrid cars={wishlistedCars} isLoading={isLoading || isWishlistLoading} user={user} skeletonCount={wishlistedCars.length > 0 ? wishlistedCars.length : 1} />
-                                    </div>
-                                )}
-                                
-                                <div className="space-y-6">
-                                    {user && wishlistedCars.length > 0 && (
-                                        <div className="flex items-center gap-3">
-                                            <h2 className="text-2xl font-bold text-foreground">All Cars</h2>
-                                            <div className="h-px flex-1 bg-border"></div>
-                                        </div>
-                                    )}
-                                    <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} user={user} />
-                                </div>
+                            <div className="space-y-6">
+                                <CarGrid cars={cars} isLoading={isLoading} skeletonCount={12} user={user} />
                             </div>
 
                             {/* Pagination */}
