@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Car, Menu, X, User, Heart, Calendar, Settings, LogOut, UserCircle, Loader2 } from "lucide-react";
 import { HiUserCircle, HiLogin } from "react-icons/hi";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -175,8 +175,8 @@ const Header = () => {
 
     if (user) {
       return (
-        <div className="space-y-2">
-          <div className="flex items-center space-x-3 px-3 py-3 rounded-md bg-muted/50 theme-transition">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 rounded-md bg-muted/50 theme-transition p-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} alt={`${user.fullName} avatar`} />
               <AvatarFallback className="bg-primary text-primary-foreground theme-transition">
@@ -197,30 +197,31 @@ const Header = () => {
               </span>
             </div>
           </div>
-          {userNavigation.map((item) => (
-            <SheetClose asChild key={item.name}>
-              <Link
-                href={item.href}
-                className="flex items-center space-x-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                <item.icon className="h-4 w-4" />
-                <div className="flex flex-col">
-                  <span>{item.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {item.description}
-                  </span>
-                </div>
-              </Link>
-            </SheetClose>
-          ))}
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 px-3 py-3"
-            onClick={handleSignOut}
-          >
-            <LogOut className="mr-3 h-4 w-4" />
-            <span>Sign Out</span>
-          </Button>
+          <nav className="space-y-1">
+            {userNavigation.map((item) => (
+              <SheetClose asChild key={item.name}>
+                <Link
+                  href={item.href}
+                  className="flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <item.icon className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex flex-col">
+                    <span>{item.name}</span>
+                  </div>
+                </Link>
+              </SheetClose>
+            ))}
+          </nav>
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 px-3 py-2"
+              onClick={handleSignOut}
+            >
+              <LogOut className="mr-3 h-4 w-4" />
+              <span>Sign Out</span>
+            </Button>
+          </SheetClose>
         </div>
       );
     }
@@ -290,52 +291,56 @@ const Header = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] theme-transition">
-              <div className="flex flex-col space-y-4">
-                {/* Mobile Logo */}
-                <div className="flex items-center justify-between pb-4 border-b">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary theme-transition">
-                      <Car className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <span className="font-display text-xl font-bold tracking-tight">
-                      CarGopher
-                    </span>
-                  </div>
-                  <ThemeToggle />
-                </div>
+          <div className="flex items-center md:hidden">
+            <ThemeToggle />
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[320px] p-0 flex flex-col theme-transition">
+                <SheetHeader className="flex-row items-center justify-between space-x-2 px-4 py-3 border-b">
+                  <SheetClose asChild>
+                    <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary theme-transition">
+                        <Car className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      <span className="font-display text-lg font-bold tracking-tight">
+                        CarGopher
+                      </span>
+                    </Link>
+                  </SheetClose>
+                  <SheetTitle className="sr-only">Menu</SheetTitle>
+                  <SheetDescription className="sr-only">Main navigation and user menu.</SheetDescription>
+                </SheetHeader>
 
-                {/* Mobile Navigation Links */}
-                <nav className="flex flex-col space-y-2">
-                  {mainNavigation.map((item) => (
-                    <SheetClose asChild key={item.name}>
-                      <Link
-                        href={item.href}
-                        className="flex flex-col space-y-1 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-                      >
-                        <span>{item.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {item.description}
-                        </span>
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </nav>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <nav className="flex flex-col space-y-2">
+                    {mainNavigation.map((item) => (
+                      <SheetClose asChild key={item.name}>
+                        <Link
+                          href={item.href}
+                          className="flex flex-col space-y-1 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                          <span>{item.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {item.description}
+                          </span>
+                        </Link>
+                      </SheetClose>
+                    ))}
+                  </nav>
+                </div>
 
                 {/* Mobile User Section */}
-                <div className="pt-4 border-t">
+                <div className="px-4 py-4 border-t">
                   {renderMobileAuthSection()}
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
