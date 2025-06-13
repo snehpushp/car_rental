@@ -8,6 +8,7 @@ import { Car, Review } from "@/lib/types/database";
 import { Fuel, Gauge, MapPin, Wrench } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
+import { getServerUser } from "@/lib/utils/server-auth";
 
 async function getCarDetails(id: string): Promise<Car | null> {
     const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
@@ -38,6 +39,7 @@ function calculateAverageRating(reviews?: Review[]) {
 
 export default async function CarDetailsPage({ params }: { params: { id: string } }) {
     const car = await getCarDetails(params.id);
+    const user = await getServerUser();
 
     if (!car) {
         notFound();
@@ -69,7 +71,7 @@ export default async function CarDetailsPage({ params }: { params: { id: string 
                 </div>
                 <aside className="lg:col-span-1">
                     <div className="sticky top-24">
-                       <BookingWidget car={car} />
+                       {user?.id !== car.owner_id && <BookingWidget car={car} />}
                        <OwnerInfo owner={car.owner} />
                     </div>
                 </aside>

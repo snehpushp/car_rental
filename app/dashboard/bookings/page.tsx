@@ -30,7 +30,7 @@ const sortOptions = [
 ];
 
 export default function MyBookingsPage() {
-    const { user: profile, isLoading: authLoading } = useAuthContext();
+    const { user: profile, isLoading: authLoading, isHydrated } = useAuthContext();
     const router = useRouter();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -44,10 +44,10 @@ export default function MyBookingsPage() {
     } = useSWR(profile ? '/api/bookings/my-bookings' : null, fetcher);
 
     useEffect(() => {
-        if (!authLoading && !profile) {
+        if (isHydrated && !authLoading && !profile) {
             router.replace('/auth/login?redirect=/dashboard/bookings');
         }
-    }, [profile, authLoading, router]);
+    }, [profile, authLoading, router, isHydrated]);
 
     const bookings = (response?.data?.data as Booking[]) || [];
 

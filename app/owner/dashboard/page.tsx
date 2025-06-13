@@ -83,6 +83,7 @@ async function getDashboardData() {
       { name: 'Ongoing', value: 0 },
       { name: 'Completed', value: 0 },
       { name: 'Cancelled', value: 0 },
+      { name: 'Rejected', value: 0 },
   ];
 
   allBookings.forEach(b => {
@@ -104,6 +105,7 @@ async function getDashboardData() {
         case 'ongoing': bookingStatusDistribution[2].value++; break;
         case 'completed': bookingStatusDistribution[3].value++; break;
         case 'cancelled': bookingStatusDistribution[4].value++; break;
+        case 'rejected': bookingStatusDistribution[5].value++; break;
     }
   });
 

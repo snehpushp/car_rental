@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils";
 
 interface WishlistButtonProps {
   carId: string;
+  ownerId: string;
   initialIsWishlisted: boolean;
   userId: string | null;
+  userRole: string | null;
 }
 
-export function WishlistButton({ carId, initialIsWishlisted, userId }: WishlistButtonProps) {
+export function WishlistButton({ carId, ownerId, initialIsWishlisted, userId, userRole }: WishlistButtonProps) {
   const [isWishlisted, setIsWishlisted] = useState(initialIsWishlisted);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -58,6 +60,10 @@ export function WishlistButton({ carId, initialIsWishlisted, userId }: WishlistB
       }
     });
   };
+
+  if (userRole === 'owner' || userId === ownerId) {
+    return null;
+  }
 
   return (
     <Button

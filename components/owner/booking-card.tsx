@@ -8,13 +8,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { BookingWithRelations } from '@/lib/types/database';
+import { BookingWithRelations, BookingStatus } from '@/lib/types/database';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import OwnerBookingActions from './owner-booking-actions';
 import { Badge } from '../ui/badge';
+import { useState } from 'react';
 
 interface BookingCardProps {
   booking: BookingWithRelations;
@@ -29,7 +30,18 @@ const statusColors: { [key: string]: string } = {
     rejected: 'bg-red-800 hover:bg-red-800/80',
   };
 
-export function OwnerBookingCard({ booking }: BookingCardProps) {
+export function OwnerBookingCard({ booking: initialBooking }: BookingCardProps) {
+  const [booking, setBooking] = useState(initialBooking);
+  const customer = booking.customer;
+
+  const handleActionSuccess = (newStatus: BookingStatus, rejectionReason?: string) => {
+    setBooking(prev => ({
+        ...prev,
+        status: newStatus,
+        rejection_reason: rejectionReason || prev.rejection_reason
+    }));
+  };
+
   return (
     <Card key={booking.id} className="flex flex-col overflow-hidden">
         <div className="relative">
@@ -51,6 +63,18 @@ export function OwnerBookingCard({ booking }: BookingCardProps) {
         <CardDescription>{booking.car?.year}</CardDescription>
       </CardHeader>
       <CardContent className="p-4 pt-0 flex-grow space-y-4">
+        {customer && (
+            <div className='flex items-center gap-3'>
+                <Avatar className='h-10 w-10'>
+                    <AvatarImage src={customer.avatar_url || ''} alt={customer.full_name} />
+                    <AvatarFallback>{customer.full_name?.[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className='font-semibold text-sm'>Rented by</p>
+                    <p className='text-muted-foreground text-sm'>{customer.full_name}</p>
+                </div>
+            </div>
+        )}
          <div className='grid grid-cols-2 gap-4 text-sm'>
             <div>
                 <p className="font-semibold">From</p>
@@ -79,7 +103,7 @@ export function OwnerBookingCard({ booking }: BookingCardProps) {
          )}
       </CardContent>
       <CardFooter className="bg-muted/40 p-2 mt-auto">
-        <OwnerBookingActions booking={booking} />
+        <OwnerBookingActions booking={booking} onActionSuccess={handleActionSuccess} />
       </CardFooter>
     </Card>
   );

@@ -15,9 +15,11 @@ import {
 import { Textarea } from '../ui/textarea';
 import { useState } from 'react';
 import { Label } from '../ui/label';
+import { BookingStatus } from '@/lib/types/database';
 
 interface OwnerBookingActionsProps {
   booking: BookingWithRelations;
+  onActionSuccess: (status: BookingStatus, reason?: string) => void;
 }
 
 async function handleBookingAction(
@@ -27,11 +29,11 @@ async function handleBookingAction(
 ): Promise<{ success: boolean; error?: string; data?: any }> {
   const url = `/api/bookings/${bookingId}/${action}`;
   const options: RequestInit = {
-    method: 'POST',
+    method: action === 'reject' ? 'PATCH' : 'POST',
     headers: { 'Content-Type': 'application/json' },
   };
   if (reason) {
-    options.body = JSON.stringify({ reason });
+    options.body = JSON.stringify({ rejection_reason: reason });
   }
 
   try {
@@ -54,7 +56,7 @@ async function handleBookingAction(
   }
 }
 
-export default function OwnerBookingActions({ booking }: OwnerBookingActionsProps) {
+export default function OwnerBookingActions({ booking, onActionSuccess }: OwnerBookingActionsProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
@@ -63,6 +65,7 @@ export default function OwnerBookingActions({ booking }: OwnerBookingActionsProp
     const result = await handleBookingAction(booking.id, 'confirm');
     if (result.success) {
       toast.success('Booking confirmed successfully!');
+      onActionSuccess('upcoming');
     } else {
       toast.error(result.error || 'Failed to confirm booking.');
     }
@@ -77,6 +80,7 @@ export default function OwnerBookingActions({ booking }: OwnerBookingActionsProp
     const result = await handleBookingAction(booking.id, 'reject', rejectionReason);
      if (result.success) {
       toast.success('Booking rejected successfully!');
+      onActionSuccess('rejected', rejectionReason);
       setDialogOpen(false);
     } else {
       toast.error(result.error || 'Failed to reject booking.');
@@ -86,13 +90,10 @@ export default function OwnerBookingActions({ booking }: OwnerBookingActionsProp
   switch (booking.status) {
     case 'pending':
       return (
-        <div className="flex gap-2 w-full">
-          <Button onClick={onConfirm} className="w-full">
-            Confirm
-          </Button>
+        <div className="flex justify-end gap-2 w-full">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="destructive" className="w-full">
+              <Button variant="destructive">
                 Reject
               </Button>
             </DialogTrigger>
@@ -118,6 +119,9 @@ export default function OwnerBookingActions({ booking }: OwnerBookingActionsProp
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <Button onClick={onConfirm}>
+            Confirm
+          </Button>
         </div>
       );
     // Add cases for other statuses here if needed

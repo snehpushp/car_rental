@@ -30,8 +30,10 @@ export function CarCard({ car, user }: CarCardProps) {
         <div className="absolute right-3 top-3">
           <WishlistButton 
             carId={car.id}
+            ownerId={car.owner_id}
             initialIsWishlisted={!!car.is_wishlisted}
             userId={user?.id || null}
+            userRole={user?.role || null}
           />
         </div>
         <Badge variant="secondary" className="absolute bottom-3 left-3">
@@ -76,9 +78,11 @@ export function CarCard({ car, user }: CarCardProps) {
           ${car.price_per_day}
           <span className="text-sm font-normal text-muted-foreground">/day</span>
         </div>
-        <Button asChild>
-          <Link href={`/cars/${car.id}`}>Book Now</Link>
-        </Button>
+        {user?.role !== 'owner' && (
+          <Button asChild>
+            <Link href={`/cars/${car.id}`}>Book Now</Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
