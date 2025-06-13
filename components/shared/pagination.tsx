@@ -83,26 +83,29 @@ export function Pagination({ pagination }: PaginationProps) {
   }
 
   return (
-    <div className="mt-8 flex justify-center">
+    <div className="flex justify-center">
         <ShadcnPagination>
-            <PaginationContent>
+            <PaginationContent className="gap-2">
                 <PaginationItem>
                     <PaginationPrevious 
                         href="#"
                         onClick={(e) => { e.preventDefault(); handlePageChange(page - 1);}}
-                        className={!has_prev ? 'pointer-events-none opacity-50' : undefined}
+                        className={`border-border text-foreground hover:bg-muted ${!has_prev ? 'pointer-events-none opacity-50' : ''}`}
                     />
                 </PaginationItem>
 
                 {getPageNumbers().map((p, index) => (
                     <PaginationItem key={index}>
                         {p === '...' ? (
-                            <PaginationEllipsis />
+                            <PaginationEllipsis className="text-muted-foreground" />
                         ) : (
                             <PaginationLink 
                                 href="#"
                                 onClick={(e) => { e.preventDefault(); handlePageChange(p as number);}}
                                 isActive={page === p}
+                                className={`border-border text-foreground hover:bg-muted ${
+                                    page === p ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''
+                                }`}
                             >
                                 {p}
                             </PaginationLink>
@@ -114,7 +117,7 @@ export function Pagination({ pagination }: PaginationProps) {
                     <PaginationNext 
                         href="#"
                         onClick={(e) => { e.preventDefault(); handlePageChange(page + 1);}}
-                        className={!has_next ? 'pointer-events-none opacity-50' : undefined}
+                        className={`border-border text-foreground hover:bg-muted ${!has_next ? 'pointer-events-none opacity-50' : ''}`}
                     />
                 </PaginationItem>
             </PaginationContent>

@@ -36,18 +36,18 @@ export function CarSortOptions() {
     const currentSort = searchParams.get('sort_by') ?? 'created_desc';
 
     return (
-        <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Sort by:</span>
+        <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
             <Select 
                 defaultValue={currentSort}
                 onValueChange={(value) => router.push(`${pathname}?${createQueryString('sort_by', value)}`)}
             >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] h-10 border-border bg-background text-foreground">
                     <SelectValue placeholder="Select" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-border bg-card">
                     {sortOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value} value={option.value} className="text-foreground">
                             {option.label}
                         </SelectItem>
                     ))}

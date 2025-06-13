@@ -8,8 +8,10 @@ import { Car, PaginatedResponse, Wishlist as WishlistItem } from '@/lib/types/da
 import { FilterSidebar } from '@/components/cars/filter-sidebar';
 import { Pagination } from '@/components/shared/pagination';
 import { CarSortOptions } from '@/components/cars/car-sort-options';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuthContext } from '@/lib/context/auth-context';
+import { Button } from '@/components/ui/button';
+import { Filter, X } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -17,6 +19,7 @@ export default function BrowseCarsPage() {
     const searchParams = useSearchParams();
     const queryString = searchParams.toString();
     const { user } = useAuthContext();
+    const [showFilters, setShowFilters] = useState(false);
   
     const { data: carsResponse, error, isLoading } = useSWR<{ data: PaginatedResponse<Car>}>(
       `/api/cars?${queryString}`,
@@ -41,40 +44,125 @@ export default function BrowseCarsPage() {
     const totalResults = carsResponse?.data?.pagination?.total ?? 0;
 
     return (
-        <PageSection className="!py-6">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-                <aside className="lg:col-span-3">
-                    <div className="sticky top-24">
-                        <FilterSidebar />
-                    </div>
-                </aside>
-                <main className="lg:col-span-9">
-                    <div className="mb-6 flex flex-col items-baseline gap-4 sm:flex-row sm:justify-between">
-                        <p className="text-muted-foreground">
-                            Showing <span className="font-bold text-foreground">{cars.length}</span> of {totalResults} results
-                        </p>
-                        <div className="flex items-center gap-4">
-                            <CarSortOptions />
-                        </div>
+        <div className="min-h-screen bg-background">
+            <PageSection className="!py-8">
+                <div className="space-y-8">
+                    {/* Page Header */}
+                    <div className="border-b border-border pb-6">
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">Browse Cars</h1>
+                        <p className="mt-2 text-muted-foreground">Find the perfect car for your next adventure</p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8">
-                        <div>
-                            {user && wishlistedCars.length > 0 && (
-                                <div className="mb-12">
-                                    <h2 className="text-3xl font-bold tracking-tight mb-6">From Your Wishlist</h2>
-                                    <CarGrid cars={wishlistedCars} isLoading={isLoading || isWishlistLoading} user={user} skeletonCount={wishlistedCars.length > 0 ? wishlistedCars.length : 1} />
-                                    <hr className="my-8" />
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+                        {/* Desktop Filter Sidebar */}
+                        <aside className="hidden lg:block lg:col-span-1">
+                            <div className="sticky top-24">
+                                <FilterSidebar showHeader={true} />
+                            </div>
+                        </aside>
+
+                        {/* Mobile Filter Overlay */}
+                        {showFilters && (
+                            <div className="fixed inset-0 z-50 lg:hidden">
+                                {/* Backdrop */}
+                                <div 
+                                    className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                                    onClick={() => setShowFilters(false)}
+                                />
+                                
+                                {/* Filter Panel */}
+                                <div className="absolute inset-y-0 left-0 w-full max-w-sm bg-card border-r border-border shadow-xl">
+                                    <div className="flex h-full flex-col">
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between border-b border-border p-4">
+                                            <h2 className="text-lg font-semibold text-foreground">Filters</h2>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowFilters(false)}
+                                                className="h-8 w-8 p-0"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        
+                                        {/* Filter Content */}
+                                        <div className="flex-1 overflow-y-auto p-4">
+                                            <FilterSidebar showHeader={false} />
+                                        </div>
+                                        
+                                        {/* Footer */}
+                                        <div className="border-t border-border p-4">
+                                            <Button
+                                                className="w-full"
+                                                onClick={() => setShowFilters(false)}
+                                            >
+                                                Apply Filters
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Main Content */}
+                        <main className="lg:col-span-3 space-y-6">
+                            {/* Mobile Filter Button + Results Header */}
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-card border border-border p-4">
+                                <div className="flex items-center gap-4">
+                                    {/* Mobile Filter Toggle */}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowFilters(true)}
+                                        className="lg:hidden border-border"
+                                    >
+                                        <Filter className="h-4 w-4 mr-2" />
+                                        Filters
+                                    </Button>
+                                    
+                                    <div className="text-sm text-muted-foreground">
+                                        Showing <span className="font-semibold text-foreground">{cars.length}</span> of{' '}
+                                        <span className="font-semibold text-foreground">{totalResults}</span> results
+                                    </div>
+                                </div>
+                                
+                                <CarSortOptions />
+                            </div>
+
+                            {/* Results Content */}
+                            <div className="space-y-8">
+                                {user && wishlistedCars.length > 0 && (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-2xl font-bold text-foreground">From Your Wishlist</h2>
+                                            <div className="h-px flex-1 bg-border"></div>
+                                        </div>
+                                        <CarGrid cars={wishlistedCars} isLoading={isLoading || isWishlistLoading} user={user} skeletonCount={wishlistedCars.length > 0 ? wishlistedCars.length : 1} />
+                                    </div>
+                                )}
+                                
+                                <div className="space-y-6">
+                                    {user && wishlistedCars.length > 0 && (
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-2xl font-bold text-foreground">All Cars</h2>
+                                            <div className="h-px flex-1 bg-border"></div>
+                                        </div>
+                                    )}
+                                    <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} user={user} />
+                                </div>
+                            </div>
+
+                            {/* Pagination */}
+                            {pagination && (
+                                <div className="border-t border-border pt-8">
+                                    <Pagination pagination={pagination} />
                                 </div>
                             )}
-                            <h2 className="text-3xl font-bold tracking-tight mb-6">{user && wishlistedCars.length > 0 ? 'All Cars' : ''}</h2>
-                            <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} user={user} />
-                        </div>
+                        </main>
                     </div>
-
-                    {pagination && <Pagination pagination={pagination} />}
-                </main>
-            </div>
-        </PageSection>
+                </div>
+            </PageSection>
+        </div>
     );
 } 
