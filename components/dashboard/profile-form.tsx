@@ -36,7 +36,7 @@ const profileFormSchema = z.object({
     .string()
     .min(2, { message: "Full name must be at least 2 characters." })
     .max(50, { message: "Full name must not exceed 50 characters." }),
-  avatar_url: z.string().url().nullable(),
+  avatar_url: z.string().url().optional().nullable(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -44,6 +44,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export function ProfileForm({ profile }: ProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -80,7 +81,9 @@ export function ProfileForm({ profile }: ProfileFormProps) {
   };
 
   const handleAvatarUpload = (newAvatarUrl: string) => {
-    form.setValue("avatar_url", newAvatarUrl, { shouldValidate: true });
+    form.setValue("avatar_url", newAvatarUrl, { shouldValidate: true, shouldDirty: true });
+    setPreviewUrl(null); // Clear preview to show the new avatar from the server
+    router.refresh();
   };
 
   return (
@@ -97,6 +100,8 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                   currentAvatarUrl={field.value}
                   onUploadSuccess={handleAvatarUpload}
                   fullName={form.watch("full_name")}
+                  previewUrl={previewUrl}
+                  setPreviewUrl={setPreviewUrl}
                 />
               </FormControl>
               <FormMessage />

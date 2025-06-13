@@ -35,7 +35,7 @@ type CarFormValues = z.infer<typeof carFormSchema>;
 
 interface CarFormProps {
   initialData?: Car;
-  onSubmit: (data: CarFormValues, token: string | null) => Promise<any>;
+  onSubmit: (data: CarFormValues) => Promise<any>;
 }
 
 // TODO: These should ideally come from a central config or database
@@ -67,7 +67,7 @@ export default function CarForm({ initialData, onSubmit }: CarFormProps) {
     setIsSubmitting(true);
     toast.loading(initialData ? 'Updating car...' : 'Creating new car...');
     try {
-      await onSubmit(values, session?.access_token || null);
+      await onSubmit(values);
       toast.success(initialData ? 'Car updated successfully!' : 'Car created successfully!');
       router.push('/owner/cars');
       router.refresh(); // To show the new/updated car in the list
@@ -162,7 +162,7 @@ export default function CarForm({ initialData, onSubmit }: CarFormProps) {
                     <FormItem><FormLabel>Seats</FormLabel><FormControl><Input type="number" placeholder="e.g. 5" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField name="specs.doors" render={({ field }) => (
-                    <FormItem><FormLabel>Doors</FormLabel><FormControl><Input type="number" placeholder="e.g. 4" {...field} /></FormControl><FormMessage /></FormMessage>
+                    <FormItem><FormLabel>Doors</FormLabel><FormControl><Input type="number" placeholder="e.g. 4" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
             </CardContent>
         </Card>

@@ -1,11 +1,20 @@
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
+
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { BookingWithRelations } from '@/lib/types/database';
-import { cn, formatCurrency } from '@/lib/utils';
-import { format } from 'date-fns';
 import Image from 'next/image';
-import Link from 'next/link';
-import { BookingActions } from './booking-actions';
+import { format } from 'date-fns';
+import { formatCurrency, cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import OwnerBookingActions from './owner-booking-actions';
+import { Badge } from '../ui/badge';
 
 interface BookingCardProps {
   booking: BookingWithRelations;
@@ -20,21 +29,13 @@ const statusColors: { [key: string]: string } = {
     rejected: 'bg-red-800 hover:bg-red-800/80',
   };
 
-export function BookingCard({ booking }: BookingCardProps) {
-    if (!booking.car) {
-        return (
-            <Card className="p-4 text-center text-red-500 col-span-1 md:col-span-2 lg:col-span-3">
-                This booking is associated with a car that has been deleted.
-            </Card>
-        )
-    }
-
+export function OwnerBookingCard({ booking }: BookingCardProps) {
   return (
-    <Card className="flex flex-col overflow-hidden">
-        <Link href={`/cars/${booking.car.id}`} className='relative'>
-             <Image
-                src={booking.car.image_urls?.[0] || '/images/placeholder-car.png'}
-                alt={booking.car.brand || 'Car image'}
+    <Card key={booking.id} className="flex flex-col overflow-hidden">
+        <div className="relative">
+            <Image
+                src={booking.car?.image_urls?.[0] || '/images/placeholder-car.png'}
+                alt={booking.car?.brand || 'Car image'}
                 width={400}
                 height={200}
                 className="object-cover w-full aspect-video"
@@ -42,15 +43,13 @@ export function BookingCard({ booking }: BookingCardProps) {
             <Badge className={cn("absolute top-2 right-2 text-white", statusColors[booking.status])}>
                 {booking.status}
             </Badge>
-        </Link>
-        <CardHeader className='p-4'>
-            <Link href={`/cars/${booking.car.id}`}>
-                <CardTitle className="text-lg font-bold hover:underline truncate">
-                    {booking.car.brand} {booking.car.model}
-                </CardTitle>
-            </Link>
-            <CardDescription>{booking.car.year}</CardDescription>
-        </CardHeader>
+        </div>
+      <CardHeader className='p-4'>
+        <CardTitle className="text-lg font-bold truncate">
+            {booking.car?.brand} {booking.car?.model}
+        </CardTitle>
+        <CardDescription>{booking.car?.year}</CardDescription>
+      </CardHeader>
       <CardContent className="p-4 pt-0 flex-grow space-y-4">
          <div className='grid grid-cols-2 gap-4 text-sm'>
             <div>
@@ -67,20 +66,20 @@ export function BookingCard({ booking }: BookingCardProps) {
              </div>
          </div>
          <div>
-            <p className="font-semibold">Total Price</p>
-            <p className="text-sm font-bold">{formatCurrency(booking.total_price)}</p>
+            <p className="font-semibold">Total Payout</p>
+            <p className="text-sm font-bold text-green-600">{formatCurrency(booking.total_price)}</p>
          </div>
          {booking.status === 'rejected' && booking.rejection_reason && (
              <div>
-                <p className="font-semibold text-destructive">Reason for Rejection</p>
+                <p className="font-semibold text-destructive">Rejection Reason</p>
                 <p className="text-sm text-destructive bg-red-50 border border-destructive rounded-md p-2">
                     {booking.rejection_reason}
                 </p>
              </div>
          )}
       </CardContent>
-      <CardFooter className="bg-muted/40 p-2 mt-auto flex justify-end">
-        <BookingActions booking={booking} />
+      <CardFooter className="bg-muted/40 p-2 mt-auto">
+        <OwnerBookingActions booking={booking} />
       </CardFooter>
     </Card>
   );

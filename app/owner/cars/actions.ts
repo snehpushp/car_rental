@@ -2,13 +2,10 @@
 
 import { z } from 'zod';
 import { carFormSchema } from '@/lib/validation/schemas';
-import { getSupabaseServiceRole } from '@/lib/supabase/server';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 type CarFormValues = z.infer<typeof carFormSchema>;
-
-const supabase = getSupabaseServiceRole();
 
 // A simple (and not very robust) geocoding function.
 // In a real app, you'd use a proper geocoding service like Google Maps Geocoding API.
@@ -21,6 +18,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
 
 
 async function uploadImages(files: File[], ownerId: string): Promise<string[]> {
+    const supabase = createClient();
     const imageUrls: string[] = [];
     for (const file of files) {
         const filePath = `${ownerId}/${Date.now()}-${file.name}`;
@@ -35,13 +33,10 @@ async function uploadImages(files: File[], ownerId: string): Promise<string[]> {
     return imageUrls;
 }
 
-export async function createCarAction(values: CarFormValues, token: string | null) {
-    if (!token) throw new Error("Authentication required.");
-    
-    // Use a temporary client to get the user from the token
-    const supabaseClient = createClient();
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-    if (!user) throw new Error("Invalid user session.");
+export async function createCarAction(values: CarFormValues) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Authentication required.");
 
     const validatedFields = carFormSchema.safeParse(values);
     if (!validatedFields.success) {
@@ -76,13 +71,10 @@ export async function createCarAction(values: CarFormValues, token: string | nul
     }
 }
 
-export async function updateCarAction(carId: string, values: CarFormValues, token: string | null) {
-     if (!token) throw new Error("Authentication required.");
-    
-    // Use a temporary client to get the user from the token
-    const supabaseClient = createClient();
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-    if (!user) throw new Error("Invalid user session.");
+export async function updateCarAction(carId: string, values: CarFormValues) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Authentication required.");
 
     const validatedFields = carFormSchema.safeParse(values);
     if (!validatedFields.success) {

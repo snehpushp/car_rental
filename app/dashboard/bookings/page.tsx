@@ -153,7 +153,9 @@ export default function MyBookingsPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <BookingList bookings={filteredAndSortedBookings} />
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <BookingList bookings={filteredAndSortedBookings} />
+                </div>
             </div>
         </PageSection>
     );

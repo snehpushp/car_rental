@@ -1,13 +1,13 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import type { Profile } from '@/lib/types/database';
 import { toast } from 'sonner';
 
 export function useAuth() {
-  const supabase = createClient();
+  const supabase = getSupabaseClient();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);

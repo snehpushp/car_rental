@@ -11,15 +11,18 @@ interface AvatarUploaderProps {
   currentAvatarUrl: string | null;
   onUploadSuccess: (newAvatarUrl: string) => void;
   fullName: string | null;
+  previewUrl: string | null;
+  setPreviewUrl: (url: string | null) => void;
 }
 
 export function AvatarUploader({
   currentAvatarUrl,
   onUploadSuccess,
   fullName,
+  previewUrl,
+  setPreviewUrl,
 }: AvatarUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

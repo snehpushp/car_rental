@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     
     // Generate unique filename
     const fileExt = file.name.split('.').pop();
-    const fileName = `${auth.profile.id}-${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${auth.profile.id}/${fileName}`;
     
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
@@ -83,8 +83,9 @@ export async function POST(request: NextRequest) {
     if (auth.profile.avatar_url && auth.profile.avatar_url !== urlData.publicUrl) {
       try {
         // Extract old file path from URL
-        const oldUrl = new URL(auth.profile.avatar_url);
-        const oldPath = oldUrl.pathname.split('/').slice(-2).join('/'); // Get 'avatars/filename.ext'
+        const oldPath = auth.profile.avatar_url.substring(
+          auth.profile.avatar_url.lastIndexOf('/avatars/') + '/avatars/'.length
+        );
         
         await supabase.storage
           .from('avatars')

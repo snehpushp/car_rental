@@ -6,44 +6,38 @@ import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
-
-const createServerFetch = () => {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
-
-  return async (url: string, options: RequestInit = {}) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const headers = new Headers(options.headers);
-    if (session) {
-      headers.set('Authorization', `Bearer ${session.accessToken}`);
-    }
-    
-    const fullUrl = new URL(url, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
-    const response = await fetch(fullUrl.toString(), {
-      ...options,
-      headers,
-      cache: 'no-store', // Ensure fresh data for the management table
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('API Error:', response.status, errorBody);
-      throw new Error(`Failed to fetch ${url}`);
-    }
-    
-    return response.json();
-  };
-};
+import { Car } from '@/lib/types/database';
 
 async function CarsDataTable() {
-  const serverFetch = createServerFetch();
-  const response = await serverFetch('/api/owner/cars');
-  
-  // The API returns { data: cars, pagination: ... }
-  // So we pass response.data to the DataTable
-  const cars = response.data || [];
+  const supabase = createClient();
 
-  return <DataTable columns={columns} data={cars} />;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    // This should ideally not happen if the page is protected
+    return <div>Please log in to see your cars.</div>;
+  }
+
+  const { data: cars, error } = await supabase
+    .from('cars')
+    .select('*, bookings(count)')
+    .eq('owner_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching cars:', error);
+    return <div>Error loading cars. Please try again later.</div>;
+  }
+
+  const carsWithBookingCount =
+    cars?.map((car) => ({
+      ...car,
+      booking_count: car.bookings[0]?.count || 0,
+    })) || [];
+
+  return <DataTable columns={columns} data={carsWithBookingCount} />;
 }
 
 export default function CarManagementPage() {
