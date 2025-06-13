@@ -14,7 +14,7 @@ interface RouteParams {
   params: { id: string };
 }
 
-export async function PATCH(
+export async function POST(
   request: NextRequest,
   { params }: RouteParams
 ) {

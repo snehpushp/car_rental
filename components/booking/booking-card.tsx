@@ -1,3 +1,5 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookingWithRelations } from '@/lib/types/database';
@@ -6,6 +8,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BookingActions } from './booking-actions';
+import { useState } from 'react';
 
 interface BookingCardProps {
   booking: BookingWithRelations;
@@ -20,7 +23,9 @@ const statusColors: { [key: string]: string } = {
     rejected: 'bg-red-800 hover:bg-red-800/80',
   };
 
-export function BookingCard({ booking }: BookingCardProps) {
+export function BookingCard({ booking: initialBooking }: BookingCardProps) {
+    const [booking, setBooking] = useState(initialBooking);
+
     if (!booking.car) {
         return (
             <Card className="p-4 text-center text-red-500 col-span-1 md:col-span-2 lg:col-span-3">
@@ -28,6 +33,10 @@ export function BookingCard({ booking }: BookingCardProps) {
             </Card>
         )
     }
+
+    const handleCancelSuccess = () => {
+      setBooking(prevBooking => ({ ...prevBooking, status: 'cancelled' as const }));
+    };
 
   return (
     <Card className="flex flex-col overflow-hidden">
@@ -80,7 +89,7 @@ export function BookingCard({ booking }: BookingCardProps) {
          )}
       </CardContent>
       <CardFooter className="bg-muted/40 p-2 mt-auto flex justify-end">
-        <BookingActions booking={booking} />
+        <BookingActions booking={booking} onCancelSuccess={handleCancelSuccess} />
       </CardFooter>
     </Card>
   );

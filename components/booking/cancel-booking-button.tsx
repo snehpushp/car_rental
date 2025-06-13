@@ -17,11 +17,10 @@ import { useRouter } from 'next/navigation';
 
 interface CancelBookingButtonProps {
     bookingId: string;
+    onSuccess: () => void;
 }
 
-export function CancelBookingButton({ bookingId }: CancelBookingButtonProps) {
-    const router = useRouter();
-
+export function CancelBookingButton({ bookingId, onSuccess }: CancelBookingButtonProps) {
     const handleCancel = async () => {
         const promise = fetch(`/api/bookings/${bookingId}/cancel`, {
             method: 'PATCH',
@@ -35,7 +34,7 @@ export function CancelBookingButton({ bookingId }: CancelBookingButtonProps) {
         toast.promise(promise, {
             loading: 'Cancelling booking...',
             success: () => {
-                router.refresh();
+                onSuccess();
                 return 'Booking cancelled successfully.';
             },
             error: 'Failed to cancel booking.'

@@ -20,18 +20,38 @@ interface OwnerBookingActionsProps {
   booking: BookingWithRelations;
 }
 
-async function handleBookingAction(bookingId: string, action: 'confirm' | 'reject', reason?: string) {
-    const url = `/api/bookings/${bookingId}/${action}`;
-    const options: RequestInit = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-    };
-    if (reason) {
-        options.body = JSON.stringify({ reason });
+async function handleBookingAction(
+  bookingId: string, 
+  action: 'confirm' | 'reject', 
+  reason?: string
+): Promise<{ success: boolean; error?: string; data?: any }> {
+  const url = `/api/bookings/${bookingId}/${action}`;
+  const options: RequestInit = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (reason) {
+    options.body = JSON.stringify({ reason });
+  }
+
+  try {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      // Attempt to parse error, but have a fallback
+      try {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error || `Failed to ${action} booking.` };
+      } catch (e) {
+        return { success: false, error: `Failed to ${action} booking. Server returned ${response.status}.` };
+      }
     }
 
-    const response = await fetch(url, options);
-    return response.json();
+    return await response.json();
+  } catch (error) {
+    console.error(`Error in handleBookingAction (${action}):`, error);
+    return { success: false, error: 'An unexpected error occurred.' };
+  }
 }
 
 export default function OwnerBookingActions({ booking }: OwnerBookingActionsProps) {
