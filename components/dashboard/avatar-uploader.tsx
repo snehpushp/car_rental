@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, User } from "lucide-react";
+import { Loader2, User, Upload } from "lucide-react";
 
 interface AvatarUploaderProps {
   currentAvatarUrl: string | null;
@@ -74,45 +74,67 @@ export function AvatarUploader({
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <Avatar className="w-24 h-24">
-        <AvatarImage src={previewUrl || currentAvatarUrl || ""} alt="Avatar" />
-        <AvatarFallback>
-          {fullName ? getInitials(fullName) : <User className="w-8 h-8" />}
-        </AvatarFallback>
-      </Avatar>
+    <div className="space-y-6">
+      {/* Avatar Display */}
+      <div className="flex justify-center">
+        <div className="relative">
+          <Avatar className="h-24 w-24 border-4 border-border">
+            <AvatarImage src={previewUrl || currentAvatarUrl || ""} alt="Profile photo" />
+            <AvatarFallback className="text-lg font-medium text-muted-foreground bg-muted">
+              {fullName ? getInitials(fullName) : <User className="h-8 w-8" />}
+            </AvatarFallback>
+          </Avatar>
+          {(previewUrl || currentAvatarUrl) && (
+            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-background" />
+          )}
+        </div>
+      </div>
 
-      <div className="flex items-center space-x-2">
-        <Input
-          type="file"
-          id="avatar-upload"
-          accept="image/png, image/jpeg, image/gif"
-          onChange={handleFileChange}
-          className="hidden"
-          disabled={isUploading}
-        />
-        <label
-          htmlFor="avatar-upload"
-          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 cursor-pointer"
-        >
-          {selectedFile ? "Change Image" : "Select Image"}
-        </label>
+      {/* Upload Controls */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Input
+            type="file"
+            id="avatar-upload"
+            accept="image/png, image/jpeg, image/gif"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={isUploading}
+          />
+          <label
+            htmlFor="avatar-upload"
+            className="inline-flex items-center justify-center h-10 px-4 py-2 bg-background border border-border text-foreground hover:bg-muted font-medium text-sm transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            {selectedFile ? "Change Photo" : "Choose Photo"}
+          </label>
+
+          {selectedFile && (
+            <Button
+              onClick={handleUpload}
+              disabled={isUploading || !selectedFile}
+              className="h-10 bg-foreground text-background hover:bg-foreground/90 font-medium"
+            >
+              {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Upload
+            </Button>
+          )}
+        </div>
 
         {selectedFile && (
-          <Button
-            onClick={handleUpload}
-            disabled={isUploading || !selectedFile}
-          >
-            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Upload
-          </Button>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Selected: <span className="font-medium">{selectedFile.name}</span>
+            </p>
+          </div>
         )}
+
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground">
+            Recommended: Square image, at least 400x400px
+          </p>
+        </div>
       </div>
-      {selectedFile && (
-        <p className="text-sm text-muted-foreground truncate max-w-xs">
-          Selected: {selectedFile.name}
-        </p>
-      )}
     </div>
   );
 }

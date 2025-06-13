@@ -41,12 +41,17 @@ export default async function EditCarPage({ params }: EditCarPageProps) {
   const updateActionWithId = updateCarAction.bind(null, params.id);
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Edit Your Car</h1>
-        <p className="text-muted-foreground mb-8">
-          Update the details for your car. Keeping your listing accurate helps attract the right customers.
-        </p>
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Edit Your Car</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Update the details for your car. Keeping your listing accurate helps attract the right customers.
+          </p>
+        </div>
+        
+        {/* Car Form */}
         <CarForm 
             initialData={carData}
             onSubmit={updateActionWithId} 

@@ -6,14 +6,6 @@ import { Bar, BarChart, CartesianGrid, LabelList, Pie, PieChart, Sector, XAxis, 
 import { PieSectorDataItem } from 'recharts/types/polar/Pie';
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -25,7 +17,7 @@ import { ChartConfig } from '@/components/ui/chart';
 const revenueChartConfig = {
   revenue: {
     label: 'Revenue',
-    color: 'var(--chart-1)',
+    color: 'hsl(220, 70%, 50%)',
   },
 } satisfies ChartConfig;
 
@@ -47,7 +39,7 @@ const bookingStatusChartConfig = {
   },
   completed: {
     label: 'Completed',
-    color: '#374151',
+    color: '#6B7280',
   },
   cancelled: {
     label: 'Cancelled',
@@ -66,28 +58,33 @@ interface ChartData {
 
 export default function DashboardCharts({ data }: { data: ChartData }) {
     const [activeIndex, setActiveIndex] = React.useState(0);
+    
     if (!data || !data.monthlyRevenue || !data.bookingStatusDistribution) {
         return (
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Revenue</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-60 w-full bg-muted rounded-lg animate-pulse" />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Bookings by Status</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-60 w-full bg-muted rounded-lg animate-pulse" />
-                    </CardContent>
-                </Card>
-            </div>
+            <>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-4 w-48 bg-gray-100 rounded animate-pulse" />
+                        </div>
+                        <div className="h-80 w-full bg-gray-100 rounded-lg animate-pulse" />
+                    </div>
+                </div>
+                
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="h-5 w-36 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-4 w-52 bg-gray-100 rounded animate-pulse" />
+                        </div>
+                        <div className="h-80 w-full bg-gray-100 rounded-lg animate-pulse" />
+                    </div>
+                </div>
+            </>
         )
     }
+    
     const { monthlyRevenue, bookingStatusDistribution } = data;
     const totalRevenue = monthlyRevenue.reduce((acc, curr) => acc + curr.revenue, 0);
 
@@ -100,60 +97,70 @@ export default function DashboardCharts({ data }: { data: ChartData }) {
     const totalBookings = bookingStatusDistribution.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-2 my-8">
-        <Card>
-            <CardHeader>
-            <CardTitle>Monthly Revenue</CardTitle>
-            <CardDescription>Last 12 months</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer config={revenueChartConfig}>
+    <>
+        {/* Revenue Chart */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="p-6 border-b border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900">Monthly Revenue</h3>
+                <p className="text-sm text-gray-600">Last 12 months performance</p>
+            </div>
+            <div className="p-6">
+                <ChartContainer config={revenueChartConfig} className="h-80 w-full">
                     <BarChart accessibilityLayer data={monthlyRevenue}>
-                        <CartesianGrid vertical={false} />
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E5E7EB" />
                         <XAxis
                             dataKey="name"
                             tickLine={false}
                             tickMargin={10}
                             axisLine={false}
+                            tick={{ fontSize: 12, fill: '#6B7280' }}
                             tickFormatter={(value) => value.slice(0, 3)}
                         />
-                        <YAxis />
+                        <YAxis 
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                        />
                         <ChartTooltip
-                            cursor={false}
+                            cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
                             content={<ChartTooltipContent hideLabel />}
                         />
-                        <Bar dataKey="revenue" fill="var(--color-revenue)" radius={8}>
+                        <Bar dataKey="revenue" fill="#3B82F6" radius={[4, 4, 0, 0]}>
                             <LabelList
                                 position="top"
-                                offset={12}
-                                className="fill-foreground"
-                                fontSize={12}
-                                formatter={(value: number) => `$${value.toLocaleString()}`}
+                                offset={8}
+                                className="fill-gray-700"
+                                fontSize={10}
+                                formatter={(value: number) => value > 0 ? `$${value.toLocaleString()}` : ''}
                             />
                         </Bar>
                     </BarChart>
                 </ChartContainer>
-            </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-            <div className="flex gap-2 font-medium leading-none">
-                Total Revenue: ${totalRevenue.toLocaleString()}
-                <TrendingUp className="h-4 w-4" />
             </div>
-            <div className="leading-none text-muted-foreground">
-                Showing total revenue for the last 12 months
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                        Total: ${totalRevenue.toLocaleString()}
+                    </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-1">
+                    Showing total revenue for the last 12 months
+                </p>
             </div>
-            </CardFooter>
-        </Card>
+        </div>
         
-        <Card className="flex flex-col">
-            <CardHeader className="items-center pb-0">
-                <CardTitle>Bookings by Status</CardTitle>
-                <CardDescription>Current distribution of all bookings</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 pb-0">
+        {/* Bookings Status Chart */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="p-6 border-b border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900">Bookings by Status</h3>
+                <p className="text-sm text-gray-600">Current distribution of all bookings</p>
+            </div>
+            <div className="p-6">
                 <ChartContainer
                     config={bookingStatusChartConfig}
-                    className="mx-auto aspect-square max-h-[300px]"
+                    className="h-80 w-full"
                 >
                     <PieChart>
                         <ChartTooltip
@@ -165,26 +172,33 @@ export default function DashboardCharts({ data }: { data: ChartData }) {
                             dataKey="value"
                             nameKey="name"
                             innerRadius={60}
-                            strokeWidth={5}
+                            outerRadius={120}
+                            strokeWidth={2}
+                            stroke="#ffffff"
                             activeIndex={activeIndex}
                             activeShape={({ outerRadius = 0, ...props }: PieSectorDataItem) => (
-                                <Sector {...props} outerRadius={outerRadius + 10} />
+                                <Sector {...props} outerRadius={outerRadius + 8} />
                             )}
                             onMouseEnter={(_, index) => setActiveIndex(index)}
                         />
-                        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                        <ChartLegend 
+                            content={<ChartLegendContent nameKey="name" />}
+                            wrapperStyle={{ paddingTop: '20px' }}
+                        />
                     </PieChart>
                 </ChartContainer>
-            </CardContent>
-            <CardFooter className="flex-col gap-2 text-sm">
-                <div className="flex items-center gap-2 leading-none font-medium">
-                    {totalBookings} total bookings
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                <div className="text-center">
+                    <p className="text-sm font-medium text-gray-900">
+                        {totalBookings} total bookings
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                        Showing distribution of all bookings by status
+                    </p>
                 </div>
-                <div className="text-muted-foreground leading-none">
-                    Showing distribution of all bookings by status.
-                </div>
-            </CardFooter>
-        </Card>
-    </div>
+            </div>
+        </div>
+    </>
   );
 } 

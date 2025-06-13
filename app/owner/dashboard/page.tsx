@@ -8,6 +8,7 @@ import DashboardCharts from '@/components/owner/dashboard-charts';
 import { StatCardSkeleton } from '@/components/shared/stat-card';
 import { RecentBookingsSkeleton } from '@/components/owner/recent-bookings';
 import { requireRole } from '@/lib/utils/api-helpers';
+import { PageSection } from '@/components/layout/page-section';
 
 async function getDashboardData() {
   const cookieStore = cookies();
@@ -137,18 +138,29 @@ async function OwnerDashboardData() {
   try {
     const { stats, recentBookings, chartData } = await getDashboardData();
     return (
-      <div className="space-y-8">
+      <>
+        {/* Stats Grid */}
         <DashboardStats stats={stats} />
-        <DashboardCharts data={chartData} />
+        
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <DashboardCharts data={chartData} />
+        </div>
+        
+        {/* Recent Bookings */}
         <RecentBookings bookings={recentBookings} />
-      </div>
+      </>
     );
   } catch (error) {
     console.error("Failed to load dashboard data:", error);
     return (
-      <div className="text-center text-red-500 py-8">
-        <p>Could not load dashboard data.</p>
-        <p>You may not be registered as an owner or there was a network issue.</p>
+      <div className="flex h-64 flex-col items-center justify-center rounded-xl bg-white border border-gray-200 shadow-sm">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Dashboard Error</h3>
+          <p className="text-sm text-gray-600 max-w-md">
+            Could not load dashboard data. You may not be registered as an owner or there was a network issue.
+          </p>
+        </div>
       </div>
     );
   }
@@ -157,25 +169,75 @@ async function OwnerDashboardData() {
 
 export default function OwnerDashboardPage() {
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6">Owner Dashboard</h1>
-      <Suspense fallback={
-        <div className="space-y-8">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="h-[400px] w-full bg-muted rounded-lg animate-pulse" />
-            <div className="h-[400px] w-full bg-muted rounded-lg animate-pulse" />
-          </div>
-          <RecentBookingsSkeleton />
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-600 mt-1">Monitor your car rental business performance and manage bookings</p>
         </div>
-      }>
-        <OwnerDashboardData />
-      </Suspense>
+
+        {/* Dashboard Content */}
+        <div className="space-y-6">
+          <Suspense fallback={
+            <div className="space-y-6">
+              {/* Stats Skeleton */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+              </div>
+              
+              {/* Charts Skeleton */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {/* Revenue Chart Skeleton */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="space-y-2">
+                      <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-4 w-48 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="h-80 w-full bg-gray-100 rounded-lg animate-pulse" />
+                  </div>
+                  <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                    <div className="space-y-2">
+                      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-3 w-48 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Bookings Chart Skeleton */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="space-y-2">
+                      <div className="h-5 w-36 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-4 w-52 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="h-80 w-full bg-gray-100 rounded-lg animate-pulse" />
+                  </div>
+                  <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                    <div className="space-y-2 text-center">
+                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mx-auto" />
+                      <div className="h-3 w-40 bg-gray-100 rounded animate-pulse mx-auto" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Recent Bookings Skeleton */}
+              <RecentBookingsSkeleton />
+            </div>
+          }>
+            <OwnerDashboardData />
+          </Suspense>
+        </div>
+      </div>
     </div>
   );
 } 

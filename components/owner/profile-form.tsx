@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { AvatarUploader } from "./avatar-uploader";
+import { AvatarUploader } from "../dashboard/avatar-uploader";
 
 type Profile = {
   id: string;
@@ -27,7 +27,7 @@ type Profile = {
   role: string | null;
 };
 
-interface ProfileFormProps {
+interface OwnerProfileFormProps {
   profile: Profile;
 }
 
@@ -41,7 +41,7 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-export function ProfileForm({ profile }: ProfileFormProps) {
+export function OwnerProfileForm({ profile }: OwnerProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -146,4 +146,4 @@ export function ProfileForm({ profile }: ProfileFormProps) {
       </Form>
     </div>
   );
-}
+} 

@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {
@@ -10,31 +9,40 @@ interface StatCardProps {
 
 export default function StatCard({ title, value, icon, description }: StatCardProps) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+          {description && (
+            <p className="text-xs text-gray-500">{description}</p>
+          )}
+        </div>
+        {icon && (
+          <div className="ml-4 p-3 bg-gray-50 rounded-lg">
+            <div className="text-gray-600">
+              {icon}
+            </div>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 export function StatCardSkeleton() {
-    return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-2/3" />
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-7 w-1/3 mb-2" />
-                <Skeleton className="h-3 w-1/2" />
-            </CardContent>
-        </Card>
-    )
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <Skeleton className="h-4 w-20 mb-2 bg-gray-200" />
+          <Skeleton className="h-8 w-24 mb-2 bg-gray-200" />
+          <Skeleton className="h-3 w-32 bg-gray-100" />
+        </div>
+        <div className="ml-4 p-3 bg-gray-50 rounded-lg">
+          <Skeleton className="h-5 w-5 bg-gray-200" />
+        </div>
+      </div>
+    </div>
+  );
 } 

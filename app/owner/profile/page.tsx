@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { ProfileForm } from "@/components/dashboard/profile-form";
+import { OwnerProfileForm } from "@/components/owner/profile-form";
 
-export default async function ProfilePage() {
+export default async function OwnerProfilePage() {
   const supabase = createClient();
 
   const {
@@ -40,9 +40,9 @@ export default async function ProfilePage() {
 
         {/* Profile Form */}
         <div className="space-y-8">
-          <ProfileForm profile={profile} />
+          <OwnerProfileForm profile={profile} />
         </div>
       </div>
     </div>
   );
-}
+} 
