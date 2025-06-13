@@ -43,19 +43,18 @@ export async function createCarAction(values: CarFormValues) {
         throw new Error("Invalid form data.");
     }
 
-    const { image_files, location_text, ...rest } = validatedFields.data;
+    const { image_files, location_text, latitude, longitude, ...rest } = validatedFields.data;
 
     try {
         const imageUrls = await uploadImages(image_files, user.id);
-        const { lat, lon } = await geocodeAddress(location_text);
 
         const { error } = await supabase.from('cars').insert({
             ...rest,
             owner_id: user.id,
             image_urls: imageUrls,
             location_text: location_text,
-            latitude: lat,
-            longitude: lon,
+            latitude: latitude,
+            longitude: longitude,
             is_available: true,
         });
 
@@ -82,7 +81,7 @@ export async function updateCarAction(carId: string, values: CarFormValues) {
     }
     
     // In an update, image_files might be empty if the user isn't changing them.
-    const { image_files, location_text, ...rest } = validatedFields.data;
+    const { image_files, location_text, latitude, longitude, ...rest } = validatedFields.data;
 
     try {
         let imageUrls = values.image_urls || [];
@@ -91,16 +90,14 @@ export async function updateCarAction(carId: string, values: CarFormValues) {
             imageUrls = [...imageUrls, ...newImageUrls];
         }
 
-        const { lat, lon } = await geocodeAddress(location_text);
-        
         const { error } = await supabase
             .from('cars')
             .update({
                 ...rest,
                 image_urls: imageUrls,
                 location_text: location_text,
-                latitude: lat,
-                longitude: lon,
+                latitude: latitude,
+                longitude: longitude,
             })
             .eq('id', carId)
             .eq('owner_id', user.id);
