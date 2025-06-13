@@ -6,7 +6,7 @@ import { Suspense } from 'react';
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-[calc(100vh-64px)] bg-background">
       <HeroSection />
       
       {/* Featured Cars Section */}

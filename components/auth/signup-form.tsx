@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuthContext } from '@/lib/context/auth-context';
 import { RouteChecker } from '@/lib/config/routes';
@@ -74,154 +73,164 @@ export function SignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
-        <CardDescription className="text-center">
-          Join CarGopher to start renting or listing cars
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {formError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {formError}
-              </AlertDescription>
-            </Alert>
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {formError && (
+          <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {formError}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
+            Full name
+          </Label>
+          <Input
+            id="fullName"
+            type="text"
+            placeholder="Enter your full name"
+            className="h-12 border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-foreground focus:ring-foreground"
+            {...register('fullName')}
+            disabled={isLoading}
+          />
+          {errors.fullName && (
+            <p className="text-sm text-red-600">{errors.fullName.message}</p>
           )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium text-foreground">
+            Email address
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            className="h-12 border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-foreground focus:ring-foreground"
+            {...register('email')}
+            disabled={isLoading}
+          />
+          {errors.email && (
+            <p className="text-sm text-red-600">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium text-foreground">
+            Password
+          </Label>
+          <div className="relative">
             <Input
-              id="fullName"
-              type="text"
-              placeholder="Enter your full name"
-              {...register('fullName')}
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              className="h-12 border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-foreground focus:ring-foreground pr-12"
+              {...register('password')}
               disabled={isLoading}
             />
-            {errors.fullName && (
-              <p className="text-sm text-red-500">{errors.fullName.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              {...register('email')}
-              disabled={isLoading}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                {...register('password')}
-                disabled={isLoading}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                disabled={isLoading}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm your password"
-                {...register('confirmPassword')}
-                disabled={isLoading}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                disabled={isLoading}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            <Label>I want to</Label>
-            <RadioGroup
-              value={selectedRole}
-              onValueChange={(value) => setValue('role', value as 'customer' | 'owner')}
-              className="flex flex-col space-y-2"
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-12 px-3 hover:bg-transparent text-muted-foreground hover:text-foreground"
+              onClick={() => setShowPassword(!showPassword)}
               disabled={isLoading}
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="customer" id="customer" />
-                <Label htmlFor="customer" className="cursor-pointer">
-                  Rent cars (Customer)
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="owner" id="owner" />
-                <Label htmlFor="owner" className="cursor-pointer">
-                  List my cars for rent (Car Owner)
-                </Label>
-              </div>
-            </RadioGroup>
-            {errors.role && (
-              <p className="text-sm text-red-500">{errors.role.message}</p>
-            )}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
           </div>
+          {errors.password && (
+            <p className="text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
 
-          <Button
-            type="submit"
-            className="w-full"
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+            Confirm password
+          </Label>
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm your password"
+              className="h-12 border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-foreground focus:ring-foreground pr-12"
+              {...register('confirmPassword')}
+              disabled={isLoading}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-12 px-3 hover:bg-transparent text-muted-foreground hover:text-foreground"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              disabled={isLoading}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <Label className="text-sm font-medium text-foreground">I want to</Label>
+          <RadioGroup
+            value={selectedRole}
+            onValueChange={(value) => setValue('role', value as 'customer' | 'owner')}
+            className="space-y-3"
             disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              'Create Account'
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <div className="flex items-center space-x-3 p-4 border border-border bg-background hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="customer" id="customer" />
+              <div className="flex-1">
+                <Label htmlFor="customer" className="cursor-pointer font-medium text-foreground">
+                  Rent cars
+                </Label>
+                <p className="text-sm text-muted-foreground">Browse and book cars from local hosts</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border border-border bg-background hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="owner" id="owner" />
+              <div className="flex-1">
+                <Label htmlFor="owner" className="cursor-pointer font-medium text-foreground">
+                  Share my car
+                </Label>
+                <p className="text-sm text-muted-foreground">List your car and earn money from rentals</p>
+              </div>
+            </div>
+          </RadioGroup>
+          {errors.role && (
+            <p className="text-sm text-red-600">{errors.role.message}</p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 font-medium text-base shadow-sm transition-colors"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating account...
+            </>
+          ) : (
+            'Create account'
+          )}
+        </Button>
+      </form>
+    </div>
   );
 } 

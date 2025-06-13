@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Car, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -45,151 +44,164 @@ const Footer = () => {
     { name: "LinkedIn", href: "#", icon: Linkedin },
   ];
 
-  const contactInfo = [
-    { icon: Mail, text: "support@cargopher.com", href: "mailto:support@cargopher.com" },
-    { icon: Phone, text: "+1 (555) 123-4567", href: "tel:+15551234567" },
-    { icon: MapPin, text: "San Francisco, CA", href: "#" },
-  ];
-
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Footer Content */}
-        <div className="py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-            {/* Brand Section */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                  <Car className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="font-display text-xl font-bold tracking-tight">
-                  CarGopher
-                </span>
+    <footer className="bg-background border-t border-border">
+      <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20 lg:px-8">
+        {/* Newsletter Section */}
+        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+          <div className="space-y-8 xl:col-span-1">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center bg-foreground text-background">
+                <Car className="h-5 w-5" />
               </div>
-              
-              <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                The world's largest car sharing marketplace. Find the perfect car for any trip, 
-                from a quick errand across town to a cross-country adventure.
-              </p>
-
-              {/* Contact Information */}
-              <div className="space-y-3">
-                {contactInfo.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <item.icon className="h-4 w-4 text-muted-foreground" />
-                    <Link 
-                      href={item.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {item.text}
-                    </Link>
-                  </div>
-                ))}
-              </div>
-
-              {/* Social Links */}
-              <div className="flex space-x-4 mt-6">
-                {socialLinks.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <span className="sr-only">{item.name}</span>
-                    <item.icon className="h-5 w-5" />
-                  </Link>
-                ))}
-              </div>
+              <span className="text-xl font-bold text-foreground">CarGopher</span>
             </div>
-
-            {/* Footer Links */}
-            {Object.entries(footerLinks).map(([category, links]) => (
-              <div key={category}>
-                <h3 className="font-display font-semibold text-sm mb-4">{category}</h3>
-                <ul className="space-y-3">
-                  {links.map((link) => (
-                    <li key={link.name}>
+            <p className="text-sm leading-6 text-muted-foreground max-w-xs">
+              The world's largest car sharing marketplace. Find the perfect car for any trip.
+            </p>
+            <div className="flex space-x-6">
+              {socialLinks.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span className="sr-only">{item.name}</span>
+                  <item.icon className="h-5 w-5" />
+                </Link>
+              ))}
+            </div>
+          </div>
+          
+          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+            <div className="md:grid md:grid-cols-2 md:gap-8">
+              <div>
+                <h3 className="text-sm font-semibold leading-6 text-foreground">Company</h3>
+                <ul className="mt-6 space-y-4">
+                  {footerLinks.Company.map((item) => (
+                    <li key={item.name}>
                       <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        href={item.href}
+                        className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        {link.name}
+                        {item.name}
                       </Link>
                     </li>
                   ))}
                 </ul>
               </div>
-            ))}
+              <div className="mt-10 md:mt-0">
+                <h3 className="text-sm font-semibold leading-6 text-foreground">For Renters</h3>
+                <ul className="mt-6 space-y-4">
+                  {footerLinks["For Renters"].map((item) => (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="md:grid md:grid-cols-2 md:gap-8">
+              <div>
+                <h3 className="text-sm font-semibold leading-6 text-foreground">For Hosts</h3>
+                <ul className="mt-6 space-y-4">
+                  {footerLinks["For Hosts"].map((item) => (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-10 md:mt-0">
+                <h3 className="text-sm font-semibold leading-6 text-foreground">Support</h3>
+                <ul className="mt-6 space-y-4">
+                  {footerLinks.Support.map((item) => (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Newsletter Signup */}
-        <div className="py-8 border-t">
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="text-center md:text-left">
-              <h3 className="font-display font-semibold text-lg mb-2">
-                Stay in the loop
+        <div className="mt-16 border-t border-border pt-8 sm:mt-20 lg:mt-24">
+          <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+            <div>
+              <h3 className="text-sm font-semibold leading-6 text-foreground">
+                Subscribe to our newsletter
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Get the latest updates, special offers, and travel inspiration.
               </p>
             </div>
-            
-            <div className="flex w-full max-w-sm space-x-2">
+            <div className="mt-6 sm:flex sm:max-w-md xl:mt-0">
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
               <Input
                 type="email"
+                name="email-address"
+                id="email-address"
+                autoComplete="email"
+                required
+                className="w-full min-w-0 appearance-none border-border bg-background px-3 py-1.5 text-base text-foreground placeholder-muted-foreground shadow-sm focus:border-foreground focus:ring-foreground sm:w-64 sm:text-sm sm:leading-6 xl:w-full"
                 placeholder="Enter your email"
-                className="flex-1"
               />
-              <Button type="submit">
-                Subscribe
-              </Button>
+              <div className="mt-4 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
+                <Button
+                  type="submit"
+                  className="flex w-full items-center justify-center bg-foreground px-3 py-2 text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-auto"
+                >
+                  Subscribe
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        <Separator />
-
-        {/* Bottom Footer */}
-        <div className="py-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-          <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
-            <p className="text-sm text-muted-foreground">
-              © {currentYear} CarGopher, Inc. All rights reserved.
-            </p>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/privacy"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Privacy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Terms
-              </Link>
-              <Link
-                href="/cookies"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cookies
-              </Link>
-            </div>
+        {/* Bottom section */}
+        <div className="mt-8 border-t border-border pt-8 md:flex md:items-center md:justify-between">
+          <div className="flex space-x-6 md:order-2">
+            <Link
+              href="/privacy"
+              className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy policy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Terms of service
+            </Link>
+            <Link
+              href="/cookies"
+              className="text-sm leading-6 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cookie policy
+            </Link>
           </div>
-
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">Available on:</span>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" className="h-8 px-3">
-                <span className="text-xs">App Store</span>
-              </Button>
-              <Button variant="outline" size="sm" className="h-8 px-3">
-                <span className="text-xs">Google Play</span>
-              </Button>
-            </div>
-          </div>
+          <p className="mt-8 text-xs leading-5 text-muted-foreground md:order-1 md:mt-0">
+            &copy; {currentYear} CarGopher, Inc. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

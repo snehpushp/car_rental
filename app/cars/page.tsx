@@ -37,7 +37,7 @@ export default function BrowseCarsPage() {
     const totalResults = carsResponse?.data?.pagination?.total ?? 0;
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-[calc(100vh-64px)] bg-background">
             <PageSection className="!py-8">
                 <div className="space-y-8">
                     {/* Page Header */}

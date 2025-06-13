@@ -82,7 +82,7 @@ export default async function CarDetailsPage({ params }: { params: { id: string 
         }));
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-[calc(100vh-64px)] bg-background">
             <PageSection className="!py-8">
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                     {/* Left Column - Sticky Image Gallery */}
