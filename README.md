@@ -2,7 +2,7 @@
 
 A modern, full-stack car rental platform built with Next.js 15, Supabase, and TypeScript. CarGopher connects car owners with customers, providing a seamless experience for renting premium vehicles.
 
-![CarGopher Hero](./public/light_mode_hero.png)
+![CarGopher Hero](./public/screenshot.png)
 
 ## 🌟 Demo
 
@@ -287,42 +287,6 @@ npm run start
 - Image optimization and compression
 - Secure storage with Supabase Storage
 - Responsive image display
-
-## 🚀 **Deployment**
-
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy automatically with each push
-
-### Other Platforms
-- **Netlify**: Configure build settings and environment variables
-- **Railway**: Use railway.json for configuration
-- **DigitalOcean App Platform**: Configure via app spec
-
-## 🤝 **Contributing**
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 **Support**
-
-For support, please open an issue on GitHub or contact [your-email@example.com](mailto:your-email@example.com).
-
-## 🙏 **Acknowledgments**
-
-- [Next.js](https://nextjs.org/) for the amazing React framework
-- [Supabase](https://supabase.com/) for the backend-as-a-service platform
-- [Shadcn/ui](https://ui.shadcn.com/) for the beautiful component system
-- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
-- [Lucide](https://lucide.dev/) for the icon library
 
 ---
 
