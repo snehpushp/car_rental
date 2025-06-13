@@ -64,11 +64,20 @@ export const carUpdateSchema = carCreateSchema.partial();
 export const carFiltersSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
-  fuel_type: z.enum(['petrol', 'diesel', 'electric', 'hybrid']).optional(),
-  type: z.enum(['sedan', 'suv', 'hatchback', 'coupe', 'convertible', 'wagon', 'truck', 'van']).optional(),
+  fuel_type: z.union([
+    z.enum(['petrol', 'diesel', 'electric', 'hybrid']),
+    z.array(z.enum(['petrol', 'diesel', 'electric', 'hybrid']))
+  ]).optional(),
+  type: z.union([
+    z.enum(['sedan', 'suv', 'hatchback', 'coupe', 'convertible', 'wagon', 'truck', 'van']),
+    z.array(z.enum(['sedan', 'suv', 'hatchback', 'coupe', 'convertible', 'wagon', 'truck', 'van']))
+  ]).optional(),
   min_price: z.number().positive().optional(),
   max_price: z.number().positive().optional(),
-  transmission: z.enum(['manual', 'automatic']).optional(),
+  transmission: z.union([
+    z.enum(['manual', 'automatic']),
+    z.array(z.enum(['manual', 'automatic']))
+  ]).optional(),
   year_min: z.number().int().min(1900).optional(),
   year_max: z.number().int().max(new Date().getFullYear() + 1).optional(),
   search: z.string().optional(),
@@ -145,7 +154,13 @@ export function validateQueryParams<T>(schema: z.ZodSchema<T>, searchParams: URL
       if (!isNaN(num)) {
         params[key] = num;
       }
-    } else {
+    } 
+    // Handle comma-separated multi-select parameters
+    else if (['type', 'fuel_type', 'transmission'].includes(key)) {
+      const values = value.split(',').filter(Boolean);
+      params[key] = values.length === 1 ? values[0] : values;
+    } 
+    else {
       params[key] = value;
     }
   }

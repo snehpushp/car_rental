@@ -28,6 +28,8 @@ export function CarSortOptions() {
       (name: string, value: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set(name, value);
+        // Reset to page 1 when sorting changes
+        params.delete('page');
         return params.toString();
       },
       [searchParams]

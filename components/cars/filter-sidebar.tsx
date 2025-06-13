@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +24,12 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [searchValue, setSearchValue] = useState(searchParams.get('search') ?? '');
+
+  // Update search value when URL changes
+  useEffect(() => {
+    setSearchValue(searchParams.get('search') ?? '');
+  }, [searchParams]);
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -33,26 +39,74 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
       } else {
         params.delete(name);
       }
+      // Reset to page 1 when filters change
+      params.delete('page');
       return params.toString();
     },
     [searchParams]
   );
 
-  const handleMultiCheckbox = (name: string, value: string) => {
+  const handleMultiCheckbox = useCallback((name: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    const existing = params.get(name)?.split(',') || [];
+    const existing = params.get(name)?.split(',').filter(Boolean) || [];
+    
     if (existing.includes(value)) {
-        const newValues = existing.filter((v) => v !== value);
-        if (newValues.length > 0) {
-            params.set(name, newValues.join(','));
-        } else {
-            params.delete(name);
-        }
+      // Remove the value
+      const newValues = existing.filter((v) => v !== value);
+      if (newValues.length > 0) {
+        params.set(name, newValues.join(','));
+      } else {
+        params.delete(name);
+      }
     } else {
-        params.set(name, [...existing, value].join(','));
+      // Add the value
+      const newValues = [...existing, value];
+      params.set(name, newValues.join(','));
+    }
+    
+    // Reset to page 1 when filters change
+    params.delete('page');
+    router.push(`${pathname}?${params.toString()}`);
+  }, [searchParams, router, pathname]);
+
+  // Helper functions to get current filter values
+  const getSelectedTypes = () => {
+    return searchParams.get('type')?.split(',').filter(Boolean) || [];
+  };
+
+  const getSelectedFuelTypes = () => {
+    return searchParams.get('fuel_type')?.split(',').filter(Boolean) || [];
+  };
+
+  const getSelectedTransmissions = () => {
+    return searchParams.get('transmission')?.split(',').filter(Boolean) || [];
+  };
+
+  const handleClearAll = () => {
+    // Keep only the limit parameter when clearing all filters
+    const params = new URLSearchParams();
+    const limit = searchParams.get('limit');
+    if (limit) {
+      params.set('limit', limit);
     }
     router.push(`${pathname}?${params.toString()}`);
-  }
+  };
+
+  // Debounced search handler
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchValue) {
+        params.set('search', searchValue);
+      } else {
+        params.delete('search');
+      }
+      params.delete('page');
+      router.push(`${pathname}?${params.toString()}`);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchValue, searchParams, router, pathname]);
 
   const price = searchParams.get('max_price') ? parseInt(searchParams.get('max_price')!) : 500;
 
@@ -66,7 +120,7 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
               variant="ghost" 
               size="sm"
               className="text-sm text-muted-foreground hover:text-foreground"
-              onClick={() => router.push(pathname)}
+              onClick={handleClearAll}
           >
               Clear all
           </Button>
@@ -79,8 +133,8 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
         <Input 
           id="search" 
           placeholder="Brand or model..." 
-          defaultValue={searchParams.get('search') ?? ''}
-          onChange={(e) => router.push(`${pathname}?${createQueryString('search', e.target.value)}`)}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
           className="h-10 border-border bg-background"
         />
       </div>
@@ -116,11 +170,15 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
           <div className="space-y-4 pb-6 border-b border-border">
               <h3 className="text-sm font-medium text-foreground">Car Type</h3>
               <div className="space-y-3">
-                  {carTypes.map(type => (
+                  {carTypes.map(type => {
+                    const selectedTypes = getSelectedTypes();
+                    const isChecked = selectedTypes.includes(type);
+                    
+                    return (
                       <div key={type} className="flex items-center space-x-3">
                           <Checkbox 
                               id={`type-${type}`} 
-                              checked={searchParams.get('type')?.split(',').includes(type)}
+                              checked={isChecked}
                               onCheckedChange={() => handleMultiCheckbox('type', type)}
                               className="border-border"
                           />
@@ -131,7 +189,8 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
                               {type}
                           </label>
                       </div>
-                  ))}
+                    );
+                  })}
               </div>
           </div>
           
@@ -139,11 +198,15 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
           <div className="space-y-4 pb-6 border-b border-border">
               <h3 className="text-sm font-medium text-foreground">Fuel Type</h3>
               <div className="space-y-3">
-                  {fuelTypes.map(fuel => (
-                       <div key={fuel} className="flex items-center space-x-3">
+                  {fuelTypes.map(fuel => {
+                    const selectedFuelTypes = getSelectedFuelTypes();
+                    const isChecked = selectedFuelTypes.includes(fuel);
+                    
+                    return (
+                      <div key={fuel} className="flex items-center space-x-3">
                           <Checkbox 
                               id={`fuel-${fuel}`} 
-                              checked={searchParams.get('fuel_type')?.split(',').includes(fuel)}
+                              checked={isChecked}
                               onCheckedChange={() => handleMultiCheckbox('fuel_type', fuel)}
                               className="border-border"
                           />
@@ -154,7 +217,8 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
                               {fuel}
                           </label>
                       </div>
-                  ))}
+                    );
+                  })}
               </div>
           </div>
           
@@ -162,11 +226,15 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
           <div className="space-y-4">
               <h3 className="text-sm font-medium text-foreground">Transmission</h3>
               <div className="space-y-3">
-                  {transmissionTypes.map(transmission => (
+                  {transmissionTypes.map(transmission => {
+                    const selectedTransmissions = getSelectedTransmissions();
+                    const isChecked = selectedTransmissions.includes(transmission);
+                    
+                    return (
                       <div key={transmission} className="flex items-center space-x-3">
                           <Checkbox 
                               id={`transmission-${transmission}`} 
-                              checked={searchParams.get('transmission')?.split(',').includes(transmission)}
+                              checked={isChecked}
                               onCheckedChange={() => handleMultiCheckbox('transmission', transmission)}
                               className="border-border"
                           />
@@ -177,7 +245,8 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
                               {transmission}
                           </label>
                       </div>
-                  ))}
+                    );
+                  })}
               </div>
           </div>
       </div>

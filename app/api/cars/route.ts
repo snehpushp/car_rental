@@ -38,17 +38,107 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // Build base query with joins
+    // Build base query with joins - first get count without pagination
+    let countQuery = supabase
+      .from('cars')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_available', true);
+    
+    // Apply filters to count query
+    if (filters.brand) {
+      countQuery = countQuery.ilike('brand', `%${filters.brand}%`);
+    }
+    
+    if (filters.model) {
+      countQuery = countQuery.ilike('model', `%${filters.model}%`);
+    }
+    
+    if (filters.fuel_type) {
+      if (Array.isArray(filters.fuel_type)) {
+        countQuery = countQuery.in('fuel_type', filters.fuel_type);
+      } else {
+        countQuery = countQuery.eq('fuel_type', filters.fuel_type);
+      }
+    }
+    
+    if (filters.type) {
+      if (Array.isArray(filters.type)) {
+        countQuery = countQuery.in('type', filters.type);
+      } else {
+        countQuery = countQuery.eq('type', filters.type);
+      }
+    }
+    
+    if (filters.transmission) {
+      if (Array.isArray(filters.transmission)) {
+        countQuery = countQuery.in('transmission', filters.transmission);
+      } else {
+        countQuery = countQuery.eq('transmission', filters.transmission);
+      }
+    }
+    
+    if (filters.min_price) {
+      countQuery = countQuery.gte('price_per_day', filters.min_price);
+    }
+    
+    if (filters.max_price) {
+      countQuery = countQuery.lte('price_per_day', filters.max_price);
+    }
+    
+    if (filters.year_min) {
+      countQuery = countQuery.gte('year', filters.year_min);
+    }
+    
+    if (filters.year_max) {
+      countQuery = countQuery.lte('year', filters.year_max);
+    }
+    
+    // Search functionality
+    if (filters.search) {
+      countQuery = countQuery.or(`brand.ilike.%${filters.search}%,model.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    }
+    
+    // Location-based filtering (if provided)
+    if (filters.location && filters.radius) {
+      // This would require PostGIS extension for proper distance calculations
+      // For now, we'll use a simple text search on location
+      countQuery = countQuery.ilike('location_text', `%${filters.location}%`);
+    }
+
+    // Get total count first
+    const { count, error: countError } = await countQuery;
+    
+    if (countError) {
+      console.error('Database error:', countError);
+      return createErrorResponse('Failed to fetch cars', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const totalCount = count || 0;
+
+    // If no results, return empty response
+    if (totalCount === 0) {
+      return createSuccessResponse<PaginatedResponse<Car>>({
+        data: [],
+        pagination: createPaginationMeta(1, limit, 0)
+      });
+    }
+
+    // Calculate valid page and offset
+    const totalPages = Math.ceil(totalCount / limit);
+    const validPage = Math.min(page, totalPages);
+    const validOffset = (validPage - 1) * limit;
+    
+    // Build data query with joins
     let query = supabase
       .from('cars')
       .select(`
         *,
         owner:profiles!cars_owner_id_fkey(id, full_name, avatar_url),
         reviews(rating)
-      `, { count: 'exact' })
+      `)
       .eq('is_available', true);
     
-    // Apply filters
+    // Apply filters to data query
     if (filters.brand) {
       query = query.ilike('brand', `%${filters.brand}%`);
     }
@@ -58,15 +148,27 @@ export async function GET(request: NextRequest) {
     }
     
     if (filters.fuel_type) {
-      query = query.eq('fuel_type', filters.fuel_type);
+      if (Array.isArray(filters.fuel_type)) {
+        query = query.in('fuel_type', filters.fuel_type);
+      } else {
+        query = query.eq('fuel_type', filters.fuel_type);
+      }
     }
     
     if (filters.type) {
-      query = query.eq('type', filters.type);
+      if (Array.isArray(filters.type)) {
+        query = query.in('type', filters.type);
+      } else {
+        query = query.eq('type', filters.type);
+      }
     }
     
     if (filters.transmission) {
-      query = query.eq('transmission', filters.transmission);
+      if (Array.isArray(filters.transmission)) {
+        query = query.in('transmission', filters.transmission);
+      } else {
+        query = query.eq('transmission', filters.transmission);
+      }
     }
     
     if (filters.min_price) {
@@ -119,20 +221,20 @@ export async function GET(request: NextRequest) {
         query = query.order('created_at', { ascending: false });
     }
     
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    // Apply pagination with valid offset
+    query = query.range(validOffset, validOffset + limit - 1);
     
-    const { data: cars, error, count } = await query;
+    const { data: cars, error } = await query;
     
     if (error) {
       console.error('Database error:', error);
       return createErrorResponse('Failed to fetch cars', HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
-    if (!cars || count === null) {
+    if (!cars) {
       return createSuccessResponse<PaginatedResponse<Car>>({
         data: [],
-        pagination: createPaginationMeta(page, limit, 0)
+        pagination: createPaginationMeta(validPage, limit, totalCount)
       });
     }
     
@@ -160,7 +262,7 @@ export async function GET(request: NextRequest) {
     
     const response: PaginatedResponse<Car> = {
       data: carsWithDetails,
-      pagination: createPaginationMeta(page, limit, count)
+      pagination: createPaginationMeta(validPage, limit, totalCount)
     };
     
     return createSuccessResponse(response);
