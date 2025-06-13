@@ -49,11 +49,12 @@ export function ReviewForm({ bookingId, carId, onReviewSubmit }: ReviewFormProps
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reviewData)
-    }).then(res => {
+    }).then(async (res) => {
+        const data = await res.json();
         if (!res.ok) {
-            throw new Error('Failed to submit review.');
+            throw new Error(data.error || 'Failed to submit review.');
         }
-        return res.json();
+        return data;
     });
 
     toast.promise(promise, {
@@ -63,7 +64,7 @@ export function ReviewForm({ bookingId, carId, onReviewSubmit }: ReviewFormProps
             router.refresh();
             return 'Review submitted successfully!';
         },
-        error: 'Failed to submit review.'
+        error: (err) => err.message || 'Failed to submit review.'
     });
   }
 

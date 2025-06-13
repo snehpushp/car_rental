@@ -201,4 +201,14 @@ export function calculateBookingDays(start_date: string, end_date: string): numb
   const end = new Date(end_date);
   const diffTime = Math.abs(end.getTime() - start.getTime());
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Checks if a booking can be reviewed.
+ * A booking can be reviewed only if its status is 'completed'.
+ * @param booking The booking object to check.
+ * @returns True if the booking can be reviewed, false otherwise.
+ */
+export function canReviewBooking(booking: { status: BookingStatus }): boolean {
+  return booking.status === 'completed';
 } 

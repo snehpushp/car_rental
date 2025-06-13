@@ -43,6 +43,10 @@ export async function GET(request: NextRequest) {
             full_name,
             avatar_url
           )
+        ),
+        reviews (
+          id,
+          booking_id
         )
       `, { count: 'exact' })
       .eq('customer_id', auth.profile.id);

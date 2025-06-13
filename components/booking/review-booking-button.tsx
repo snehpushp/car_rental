@@ -19,13 +19,6 @@ interface ReviewBookingButtonProps {
 
 export function ReviewBookingButton({ booking }: ReviewBookingButtonProps) {
     const [open, setOpen] = useState(false);
-    
-    // Customers can't review a car they've already reviewed
-    const hasExistingReview = booking.car?.reviews?.some(r => r.booking_id === booking.id);
-
-    if (hasExistingReview) {
-        return <Button disabled variant="outline">Review Submitted</Button>
-    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
