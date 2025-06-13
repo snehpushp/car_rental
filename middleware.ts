@@ -17,25 +17,23 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  // If the user is not authenticated...
-  if (!session) {
-    // and they are trying to access a public or authentication route, allow them.
-    if (RouteChecker.isPublicRoute(pathname) || RouteChecker.isAuthRoute(pathname)) {
-      return res;
-    }
-    // Otherwise, redirect them to the login page.
-    return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
-  }
-
   // If the user is authenticated and they try to access an auth route (e.g., /login),
   // redirect them to the homepage.
-  if (RouteChecker.isAuthRoute(pathname)) {
+  if (session && RouteChecker.isAuthRoute(pathname)) {
     return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
   }
 
-  // For all other cases (authenticated user on a protected or public route),
-  // allow the request to proceed. Role-based access control is handled
-  // within the specific pages or API routes, not in the middleware.
+  // Only require authentication for specifically protected routes
+  // For dashboard, owner, and booking management routes
+  const protectedRoutes = ['/dashboard', '/owner'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  
+  if (!session && isProtectedRoute) {
+    return NextResponse.redirect(new URL(RouteChecker.getLoginRedirectPath(pathname), request.url));
+  }
+
+  // For all other cases, allow the request to proceed.
+  // This allows public access to all other routes including car listings, car details, etc.
   return res;
 }
 
