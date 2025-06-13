@@ -34,6 +34,7 @@ export function BookingWidget({ car }: BookingWidgetProps) {
   const { user: profile } = useAuthContext();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const numberOfDays = useMemo(() => {
     if (dateRange?.from && dateRange?.to) {
@@ -41,6 +42,15 @@ export function BookingWidget({ car }: BookingWidgetProps) {
     }
     return 0;
   }, [dateRange]);
+
+  // Check for single day booking and set error
+  useMemo(() => {
+    if (numberOfDays === 1) {
+      setError('Car rentals must be for at least 2 days. Please select a longer rental period.');
+    } else {
+      setError(null);
+    }
+  }, [numberOfDays]);
 
   const totalPrice = useMemo(() => {
     return numberOfDays * car.price_per_day;
@@ -52,6 +62,10 @@ export function BookingWidget({ car }: BookingWidgetProps) {
           description: 'Please select a start and end date for your booking.',
         });
         return;
+      }
+
+      if (numberOfDays === 1) {
+        return; // Error is already shown in component
       }
   
       if (!profile) {
@@ -158,8 +172,15 @@ export function BookingWidget({ car }: BookingWidgetProps) {
         </Popover>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 text-red-800 text-sm font-medium">
+          {error}
+        </div>
+      )}
+
       {/* Price Breakdown */}
-      {numberOfDays > 0 && (
+      {numberOfDays > 0 && !error && (
         <div className="space-y-4 p-4 bg-muted/20 border border-border">
           <h4 className="font-medium text-foreground">Price Breakdown</h4>
           <div className="space-y-2 text-sm">
@@ -180,7 +201,7 @@ export function BookingWidget({ car }: BookingWidgetProps) {
           <AlertDialogTrigger asChild>
               <Button 
                   className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200" 
-                  disabled={!dateRange?.from || !dateRange?.to || isLoading}
+                  disabled={!dateRange?.from || !dateRange?.to || isLoading || !!error}
               >
                   {isLoading ? 'Processing...' : 'Request to Book'}
               </Button>
