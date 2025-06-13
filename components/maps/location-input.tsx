@@ -29,7 +29,11 @@ export function LocationInput({ onLocationSelect, defaultValue = '' }: LocationI
     return (
         <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input placeholder="Loading..." disabled className="pl-10" />
+            <Input 
+                placeholder="Loading..." 
+                disabled 
+                className="h-12 pl-10 border-border hover:border-border/80 bg-muted/50 font-medium text-muted-foreground"
+            />
         </div>
     );
   }
@@ -86,7 +90,7 @@ function Autocomplete({ onLocationSelect, defaultValue }: LocationInputProps) {
             <li
               key={place_id}
               onClick={handleSelect(suggestion)}
-              className="p-2 hover:bg-muted cursor-pointer rounded-md"
+              className="p-2 hover:bg-muted cursor-pointer"
             >
               <strong>{main_text}</strong> <small>{secondary_text}</small>
             </li>
@@ -100,10 +104,17 @@ function Autocomplete({ onLocationSelect, defaultValue }: LocationInputProps) {
             value={value}
             onChange={handleInput}
             disabled={!ready}
-            placeholder="Enter a city"
-            className="pl-10"
+            placeholder={value ? value : "Enter a city"}
+            className={cn(
+              "h-12 pl-10 border-border hover:border-border/80 bg-muted/50 hover:bg-muted/70 font-medium",
+              !value && "text-muted-foreground"
+            )}
           />
-          {status === 'OK' && <ul className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg p-2">{renderSuggestions()}</ul>}
+          {status === 'OK' && (
+            <ul className="absolute z-10 w-full mt-1 bg-card border-border border shadow-xl p-2 max-h-60 overflow-y-auto">
+              {renderSuggestions()}
+            </ul>
+          )}
         </div>
       );
 } 

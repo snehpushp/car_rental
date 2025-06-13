@@ -35,19 +35,21 @@ export function BookingSearchWidget() {
   };
 
   return (
-    <Card className="shadow-lg">
-      <CardContent className="p-4 md:p-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          <div className="lg:col-span-1">
-            <label htmlFor="location" className="mb-2 block text-sm font-medium">
+    <Card className="bg-card border-border shadow-xl">
+      <CardContent className="p-8 md:p-10">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="lg:col-span-1 space-y-3">
+            <label htmlFor="location" className="block text-sm font-semibold text-foreground">
               Location
             </label>
-            <LocationInput 
-                onLocationSelect={(loc) => setLocation(loc)} 
-            />
+            <div className="relative">
+              <LocationInput 
+                  onLocationSelect={(loc) => setLocation(loc)} 
+              />
+            </div>
           </div>
-          <div className="md:col-span-2 lg:col-span-2">
-          <label htmlFor="date" className="mb-2 block text-sm font-medium">
+          <div className="md:col-span-2 lg:col-span-2 space-y-3">
+            <label htmlFor="date" className="block text-sm font-semibold text-foreground">
               Pickup & Drop-off Date
             </label>
             <Popover>
@@ -56,11 +58,11 @@ export function BookingSearchWidget() {
                   id="date"
                   variant={'outline'}
                   className={cn(
-                    'w-full justify-start text-left font-normal',
+                    'w-full h-12 justify-start text-left font-medium border-border hover:border-border/80 bg-muted/50 hover:bg-muted/70',
                     !dateRange && 'text-muted-foreground'
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-3 h-5 w-5 text-muted-foreground" />
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
@@ -74,7 +76,7 @@ export function BookingSearchWidget() {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 border-border shadow-xl" align="start">
                 <Calendar
                   initialFocus
                   mode="range"
@@ -87,7 +89,10 @@ export function BookingSearchWidget() {
             </Popover>
           </div>
           <div className="flex items-end">
-            <Button className="w-full" size="lg" onClick={handleSearch}>
+            <Button 
+              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 text-base" 
+              onClick={handleSearch}
+            >
               <Search className="mr-2 h-5 w-5" />
               Search
             </Button>

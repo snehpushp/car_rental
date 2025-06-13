@@ -28,13 +28,20 @@ export async function FeaturedCars() {
   const cars = await getFeaturedCars();
 
   return (
-    <div className="mt-24">
-       <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Featured Cars</h2>
-        <Button variant="outline" asChild>
-          <Link href="/cars">
-            View All
-            <ArrowRight className="ml-2 h-4 w-4" />
+    <div className="space-y-12">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Featured Cars</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl">Discover our hand-picked selection of premium vehicles from trusted owners</p>
+        </div>
+        <Button 
+          variant="outline" 
+          asChild
+          className="border-border text-foreground hover:bg-muted px-6 py-3 font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+        >
+          <Link href="/cars" className="inline-flex items-center">
+            View All Cars
+            <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
       </div>
@@ -45,14 +52,21 @@ export async function FeaturedCars() {
 
 FeaturedCars.Skeleton = function FeaturedCarsSkeleton() {
     return (
-        <div className="mt-24">
-            <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-3xl font-bold tracking-tight">Featured Cars</h2>
-                <Button variant="outline" asChild>
-                <Link href="/cars">
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+        <div className="space-y-12">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div className="space-y-4">
+                    <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Featured Cars</h2>
+                    <p className="text-lg text-muted-foreground max-w-2xl">Discover our hand-picked selection of premium vehicles from trusted owners</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  asChild
+                  className="border-border text-foreground hover:bg-muted px-6 py-3 font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <Link href="/cars" className="inline-flex items-center">
+                    View All Cars
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
             </div>
             <CarGrid isLoading={true} skeletonCount={8} />

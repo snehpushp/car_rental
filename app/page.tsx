@@ -6,14 +6,18 @@ import { Suspense } from 'react';
 
 export default function HomePage() {
   return (
-    <main>
+    <main className="min-h-screen bg-background">
       <HeroSection />
-      <PageSection>
+      
+      {/* Featured Cars Section */}
+      <PageSection className="bg-muted/20">
         <Suspense fallback={<FeaturedCars.Skeleton />}>
           <FeaturedCars />
         </Suspense>
       </PageSection>
-      <PageSection className="bg-muted/40">
+      
+      {/* Promo Section */}
+      <PageSection className="bg-background border-t border-border">
         <PromoSection />
       </PageSection>
     </main>
