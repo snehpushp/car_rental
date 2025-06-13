@@ -4,14 +4,11 @@ import { CarGrid } from '@/components/shared/car-grid';
 import { PageSection } from '@/components/layout/page-section';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { Car, PaginatedResponse } from '@/lib/types/database';
+import { Car, PaginatedResponse, Wishlist as WishlistItem } from '@/lib/types/database';
 import { FilterSidebar } from '@/components/cars/filter-sidebar';
 import { Pagination } from '@/components/shared/pagination';
 import { CarSortOptions } from '@/components/cars/car-sort-options';
-import { CarsMap } from '@/components/maps/cars-map';
-import { useState } from 'react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { useMemo } from 'react';
 import { useAuthContext } from '@/lib/context/auth-context';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -21,56 +18,63 @@ export default function BrowseCarsPage() {
     const queryString = searchParams.toString();
     const { user } = useAuthContext();
   
-    const { data, error, isLoading } = useSWR<PaginatedResponse<Car>>(
+    const { data: carsResponse, error, isLoading } = useSWR<{ data: PaginatedResponse<Car>}>(
       `/api/cars?${queryString}`,
       fetcher
     );
 
-    const cars = data?.data?.data ?? [];
-    const pagination = data?.data?.pagination;
-    const totalResults = data?.data?.pagination?.total ?? 0;
+    const { data: wishlistData, isLoading: isWishlistLoading } = useSWR<{ data: PaginatedResponse<WishlistItem> }>(
+        user ? '/api/wishlist?limit=100' : null,
+        fetcher
+    );
 
-    const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
-    const [showMap, setShowMap] = useState(true);
+    const wishlistedCarIds = useMemo(() => 
+        new Set(wishlistData?.data?.data?.map((item) => item.car_id) ?? [])
+    , [wishlistData]);
 
-  return (
-    <PageSection className="!py-6">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <aside className="lg:col-span-3">
-                <div className="sticky top-24">
-                    <FilterSidebar />
-                </div>
-            </aside>
-            <main className="lg:col-span-9">
-                <div className="mb-6 flex flex-col items-baseline gap-4 sm:flex-row sm:justify-between">
-                    <p className="text-muted-foreground">
-                        Showing <span className="font-bold text-foreground">{cars.length}</span> of {totalResults} results
-                    </p>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center space-x-2">
-                            <Switch id="show-map" checked={showMap} onCheckedChange={setShowMap} />
-                            <Label htmlFor="show-map">Show Map</Label>
-                        </div>
-                        <CarSortOptions />
+    const cars = carsResponse?.data?.data ?? [];
+    const wishlistedCars = useMemo(() => 
+        cars.filter((car) => wishlistedCarIds.has(car.id))
+    , [cars, wishlistedCarIds]);
+
+    const pagination = carsResponse?.data?.pagination;
+    const totalResults = carsResponse?.data?.pagination?.total ?? 0;
+
+    return (
+        <PageSection className="!py-6">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                <aside className="lg:col-span-3">
+                    <div className="sticky top-24">
+                        <FilterSidebar />
                     </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-                    <div className={showMap ? "lg:col-span-7" : "lg:col-span-12"}>
-                        <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} user={user} />
-                    </div>
-                    {showMap && (
-                        <div className="lg:col-span-5">
-                            <div className="sticky top-24">
-                                <CarsMap cars={cars} selectedCarId={selectedCarId} onMarkerClick={setSelectedCarId} />
-                            </div>
+                </aside>
+                <main className="lg:col-span-9">
+                    <div className="mb-6 flex flex-col items-baseline gap-4 sm:flex-row sm:justify-between">
+                        <p className="text-muted-foreground">
+                            Showing <span className="font-bold text-foreground">{cars.length}</span> of {totalResults} results
+                        </p>
+                        <div className="flex items-center gap-4">
+                            <CarSortOptions />
                         </div>
-                    )}
-                </div>
+                    </div>
 
-                {pagination && <Pagination pagination={pagination} />}
-            </main>
-        </div>
-    </PageSection>
-  );
+                    <div className="grid grid-cols-1 gap-8">
+                        <div>
+                            {user && wishlistedCars.length > 0 && (
+                                <div className="mb-12">
+                                    <h2 className="text-3xl font-bold tracking-tight mb-6">From Your Wishlist</h2>
+                                    <CarGrid cars={wishlistedCars} isLoading={isLoading || isWishlistLoading} user={user} skeletonCount={wishlistedCars.length > 0 ? wishlistedCars.length : 1} />
+                                    <hr className="my-8" />
+                                </div>
+                            )}
+                            <h2 className="text-3xl font-bold tracking-tight mb-6">{user && wishlistedCars.length > 0 ? 'All Cars' : ''}</h2>
+                            <CarGrid cars={cars} isLoading={isLoading} skeletonCount={9} user={user} />
+                        </div>
+                    </div>
+
+                    {pagination && <Pagination pagination={pagination} />}
+                </main>
+            </div>
+        </PageSection>
+    );
 } 

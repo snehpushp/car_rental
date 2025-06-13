@@ -21,7 +21,6 @@ export const AUTH_ROUTES = [
 
 // Customer-only routes
 export const CUSTOMER_ROUTES = [
-  '/dashboard',
   '/dashboard/bookings',
   '/dashboard/profile',
   '/dashboard/wishlist'
@@ -177,7 +176,7 @@ export class RouteChecker {
    * Get default redirect path for a user role
    */
   static getDefaultRedirectPath(role: 'customer' | 'owner'): string {
-    return role === 'owner' ? '/owner/dashboard' : '/dashboard';
+    return role === 'owner' ? '/owner/dashboard' : '/dashboard/bookings';
   }
 
   /**
@@ -199,7 +198,6 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/auth/login',
   SIGNUP: '/auth/signup',
-  CUSTOMER_DASHBOARD: '/dashboard',
   OWNER_DASHBOARD: '/owner/dashboard',
   CARS: '/cars',
   PROFILE: '/dashboard/profile',

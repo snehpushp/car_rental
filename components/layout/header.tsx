@@ -38,7 +38,6 @@ const Header = () => {
       ];
     } else {
       return [
-        { name: "Dashboard", href: ROUTES.CUSTOMER_DASHBOARD, icon: Settings, description: "Manage your account" },
         { name: "My Bookings", href: "/dashboard/bookings", icon: Calendar, description: "View your reservations" },
         { name: "Wishlist", href: "/dashboard/wishlist", icon: Heart, description: "Saved cars" },
         { name: "Profile", href: ROUTES.PROFILE, icon: UserCircle, description: "Account settings" },
