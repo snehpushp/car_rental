@@ -6,7 +6,6 @@ import { Car, Menu, X, User, Heart, Calendar, Settings, LogOut, UserCircle, Load
 import { HiUserCircle, HiLogin } from "react-icons/hi";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -102,7 +101,7 @@ const Header = () => {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64 theme-transition" align="end" forceMount>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.fullName}</p>
@@ -240,7 +239,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 theme-transition">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
@@ -255,32 +254,17 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <NavigationMenu className="hidden md:flex">
-            <NavigationMenuList>
-              {mainNavigation.map((item) => (
-                <NavigationMenuItem key={item.name}>
-                  <NavigationMenuTrigger className="font-medium">
-                    {item.name}
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid gap-3 p-6 w-[400px] theme-transition">
-                      <NavigationMenuLink asChild>
-                        <Link
-                          href={item.href}
-                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                        >
-                          <div className="text-sm font-medium leading-none">{item.name}</div>
-                          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                            {item.description}
-                          </p>
-                        </Link>
-                      </NavigationMenuLink>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
+          <nav className="hidden md:flex items-center space-x-8">
+            {mainNavigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
@@ -291,7 +275,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="flex items-center md:hidden">
+          <div className="flex md:hidden items-center space-x-2">
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -316,7 +300,7 @@ const Header = () => {
                   <SheetDescription className="sr-only">Main navigation and user menu.</SheetDescription>
                 </SheetHeader>
 
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 px-4 py-4">
                   <nav className="flex flex-col space-y-2">
                     {mainNavigation.map((item) => (
                       <SheetClose asChild key={item.name}>
@@ -347,4 +331,4 @@ const Header = () => {
   );
 };
 
-export { Header }; 
+export default Header; 

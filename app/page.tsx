@@ -14,6 +14,7 @@ export default function HomePage() {
         <Suspense fallback={<FeaturedCars.Skeleton />}>
           <FeaturedCars />
         </Suspense>
+        
       </PageSection>
       
       {/* Promo Section */}

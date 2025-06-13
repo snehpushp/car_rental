@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Montserrat, Poppins } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/context/auth-context";
