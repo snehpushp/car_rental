@@ -107,23 +107,30 @@ export function BookingWidget({ car }: BookingWidgetProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <span className="text-3xl font-bold">${car.price_per_day}</span>
-          <span className="text-lg font-normal text-muted-foreground">/day</span>
-        </CardTitle>
-        <CardDescription>Select your dates to book this car.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="space-y-6">
+      {/* Price Display */}
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-bold text-foreground">${car.price_per_day}</span>
+          <span className="text-lg text-muted-foreground">per day</span>
+        </div>
+        <p className="text-sm text-muted-foreground">Select your dates to see total price</p>
+      </div>
+
+      {/* Date Selection */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-foreground">Rental Period</label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               id="date"
               variant={'outline'}
-              className={cn('w-full justify-start text-left font-normal', !dateRange && 'text-muted-foreground')}
+              className={cn(
+                'w-full h-12 justify-start text-left font-medium border-border hover:border-border/80 bg-background',
+                !dateRange && 'text-muted-foreground'
+              )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-3 h-5 w-5 text-muted-foreground" />
               {dateRange?.from ? (
                 dateRange.to ? (
                   <>
@@ -133,11 +140,11 @@ export function BookingWidget({ car }: BookingWidgetProps) {
                   format(dateRange.from, 'LLL dd, y')
                 )
               ) : (
-                <span>Pick your dates</span>
+                <span>Select pickup and return dates</span>
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 border-border shadow-xl" align="start">
             <Calendar
               initialFocus
               mode="range"
@@ -149,50 +156,71 @@ export function BookingWidget({ car }: BookingWidgetProps) {
             />
           </PopoverContent>
         </Popover>
+      </div>
 
-        {numberOfDays > 0 && (
-          <div className="mt-6 space-y-2 text-sm">
+      {/* Price Breakdown */}
+      {numberOfDays > 0 && (
+        <div className="space-y-4 p-4 bg-muted/20 border border-border">
+          <h4 className="font-medium text-foreground">Price Breakdown</h4>
+          <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">${car.price_per_day} x {numberOfDays} days</span>
-              <span>${totalPrice.toFixed(2)}</span>
+              <span className="text-muted-foreground">${car.price_per_day} × {numberOfDays} days</span>
+              <span className="text-foreground">${totalPrice.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Total Price</span>
-              <span>${totalPrice.toFixed(2)}</span>
+            <div className="flex justify-between font-semibold text-base border-t border-border pt-2">
+              <span className="text-foreground">Total</span>
+              <span className="text-foreground">${totalPrice.toFixed(2)}</span>
             </div>
           </div>
-        )}
-      </CardContent>
-      <CardFooter>
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button 
-                    className="w-full" 
-                    size="lg" 
-                    disabled={!dateRange?.from || !dateRange?.to || isLoading}
-                >
-                    {isLoading ? 'Booking...' : 'Request to Book'}
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Your Booking</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Please review your booking details before confirming.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="space-y-2">
-                    <p><strong>Car:</strong> {car.brand} {car.model}</p>
-                    <p><strong>Dates:</strong> {dateRange?.from && format(dateRange.from, 'LLL dd, y')} - {dateRange?.to && format(dateRange.to, 'LLL dd, y')}</p>
-                    <p><strong>Total Price:</strong> ${totalPrice.toFixed(2)}</p>
-                </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleBooking}>Confirm & Book</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-      </CardFooter>
-    </Card>
+        </div>
+      )}
+
+      {/* Booking Button */}
+      <AlertDialog>
+          <AlertDialogTrigger asChild>
+              <Button 
+                  className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200" 
+                  disabled={!dateRange?.from || !dateRange?.to || isLoading}
+              >
+                  {isLoading ? 'Processing...' : 'Request to Book'}
+              </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="border-border bg-card">
+              <AlertDialogHeader>
+                  <AlertDialogTitle className="text-foreground">Confirm Your Booking</AlertDialogTitle>
+                  <AlertDialogDescription className="text-muted-foreground">
+                      Please review your booking details before confirming.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="space-y-3 p-4 bg-muted/20 border border-border">
+                  <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                          <span className="font-medium text-foreground">Car:</span>
+                          <span className="text-muted-foreground">{car.brand} {car.model}</span>
+                      </div>
+                      <div className="flex justify-between">
+                          <span className="font-medium text-foreground">Dates:</span>
+                          <span className="text-muted-foreground">
+                              {dateRange?.from && format(dateRange.from, 'LLL dd, y')} - {dateRange?.to && format(dateRange.to, 'LLL dd, y')}
+                          </span>
+                      </div>
+                      <div className="flex justify-between border-t border-border pt-2">
+                          <span className="font-semibold text-foreground">Total Price:</span>
+                          <span className="font-semibold text-foreground">${totalPrice.toFixed(2)}</span>
+                      </div>
+                  </div>
+              </div>
+              <AlertDialogFooter>
+                  <AlertDialogCancel className="border-border text-foreground hover:bg-muted">Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                      onClick={handleBooking}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                      Confirm & Book
+                  </AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

@@ -12,36 +12,53 @@ export function ImageGallery({ images }: ImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(images?.[0] || '/images/placeholder-car.png');
 
   return (
-    <div className="mb-8">
-      <div className="mb-4 overflow-hidden rounded-lg">
+    <div className="space-y-6">
+      {/* Main Image - Shopify style */}
+      <div className="relative aspect-square overflow-hidden bg-card border border-border">
         <Image
           src={selectedImage}
           alt="Selected car image"
-          width={800}
-          height={500}
-          className="h-auto w-full object-cover aspect-video"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
         />
       </div>
-      <div className="grid grid-cols-5 gap-2">
-        {images.map((image, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedImage(image)}
-            className={cn(
-              'overflow-hidden rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-              selectedImage === image && 'ring-2 ring-primary ring-offset-2'
-            )}
-          >
-            <Image
-              src={image}
-              alt={`Car image thumbnail ${index + 1}`}
-              width={150}
-              height={100}
-              className="h-full w-full object-cover aspect-video"
-            />
-          </button>
-        ))}
-      </div>
+      
+      {/* Thumbnail Grid - Shopify style */}
+      {images.length > 1 && (
+        <div className="grid grid-cols-4 gap-3">
+          {images.slice(0, 8).map((image, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImage(image)}
+              className={cn(
+                'relative aspect-square overflow-hidden bg-card border transition-all duration-200',
+                selectedImage === image 
+                  ? 'border-foreground ring-1 ring-foreground' 
+                  : 'border-border hover:border-muted-foreground'
+              )}
+            >
+              <Image
+                src={image}
+                alt={`Car image ${index + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 25vw, 12.5vw"
+              />
+            </button>
+          ))}
+          
+          {/* Show more indicator if more than 8 images */}
+          {images.length > 8 && (
+            <div className="relative aspect-square bg-muted border border-border flex items-center justify-center">
+              <span className="text-sm font-medium text-muted-foreground">
+                +{images.length - 8}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 } 

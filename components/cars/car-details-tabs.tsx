@@ -1,71 +1,102 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car } from '@/lib/types/database';
-import { ReviewsSection } from './reviews-section';
-import { Users, Fuel, Wrench, Gauge, MapPin } from 'lucide-react';
-import { MapView } from '../maps/map-view';
+'use client';
+
+import { Car, Review } from "@/lib/types/database";
+import { useState } from "react";
+import { ChevronDown, Star, User } from "lucide-react";
 
 interface CarDetailsTabsProps {
-  car: Car;
+    car: Car;
 }
 
-const specIconMapping = {
-    seats: <Users className="h-5 w-5 text-primary" />,
-    fuel_type: <Fuel className="h-5 w-5 text-primary" />,
-    transmission: <Wrench className="h-5 w-5 text-primary" />,
-    engine: <Gauge className="h-5 w-5 text-primary" />,
-  };
-
 export function CarDetailsTabs({ car }: CarDetailsTabsProps) {
-  const specs = {
-    seats: car.specs?.seats,
-    fuel_type: car.fuel_type,
-    transmission: car.transmission,
-    engine: car.specs?.engine,
-    ...car.specs,
-  }
+    const [expandedSection, setExpandedSection] = useState<string | null>('reviews');
 
-  return (
-    <Tabs defaultValue="description" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="description">Description</TabsTrigger>
-        <TabsTrigger value="specs">Specifications</TabsTrigger>
-        <TabsTrigger value="reviews">Reviews ({car.reviews?.length || 0})</TabsTrigger>
-        <TabsTrigger value="location">Location</TabsTrigger>
-      </TabsList>
+    const toggleSection = (section: string) => {
+        setExpandedSection(expandedSection === section ? null : section);
+    };
 
-      <TabsContent value="description" className="mt-6">
-        <p className="text-muted-foreground">{car.description || 'No description provided.'}</p>
-      </TabsContent>
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
 
-      <TabsContent value="specs" className="mt-6">
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
-            {Object.entries(specs).map(([key, value]) => {
-                if (!value) return null;
-                const icon = specIconMapping[key as keyof typeof specIconMapping] || null;
-                return (
-                    <div key={key} className="flex items-start gap-3">
-                        {icon}
-                        <div>
-                            <p className="font-semibold capitalize">{key.replace('_', ' ')}</p>
-                            <p className="text-muted-foreground">{value}</p>
-                        </div>
+    return (
+        <div className="space-y-4">
+            {/* Reviews Section */}
+            <div className="border border-border">
+                <button
+                    onClick={() => toggleSection('reviews')}
+                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-muted/50"
+                >
+                    <h3 className="text-lg font-semibold text-foreground">
+                        Reviews ({car.reviews?.length || 0})
+                    </h3>
+                    <ChevronDown 
+                        className={`h-5 w-5 text-muted-foreground transition-transform ${
+                            expandedSection === 'reviews' ? 'rotate-180' : ''
+                        }`} 
+                    />
+                </button>
+                {expandedSection === 'reviews' && (
+                    <div className="border-t border-border p-6">
+                        {car.reviews && car.reviews.length > 0 ? (
+                            <div className="space-y-6">
+                                {car.reviews.map((review: Review) => (
+                                    <div key={review.id} className="pb-6 border-b border-border last:border-0 last:pb-0">
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex items-center rounded-full overflow-hidden justify-center">
+                                                {review.customer?.avatar_url ? (
+                                                    <img 
+                                                        src={review.customer.avatar_url} 
+                                                        alt={review.customer.full_name || 'User'} 
+                                                        className="h-10 w-10 object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-10 w-10 items-center rounded-full justify-center bg-muted text-muted-foreground">
+                                                        <User className="h-5 w-5" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="font-medium text-foreground">
+                                                            {review.customer?.full_name || 'Anonymous'}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {formatDate(review.created_at)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star 
+                                                                key={i} 
+                                                                className={`h-4 w-4 ${
+                                                                    i < review.rating 
+                                                                        ? 'fill-yellow-400 text-yellow-400' 
+                                                                        : 'text-muted-foreground'
+                                                                }`} 
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <p className="text-foreground leading-relaxed">{review.comment}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-muted-foreground">No reviews yet. Be the first to review this car!</p>
+                            </div>
+                        )}
                     </div>
-                )
-            })}
+                )}
+            </div>
         </div>
-      </TabsContent>
-
-      <TabsContent value="reviews" className="mt-6">
-        <ReviewsSection reviews={car.reviews} />
-      </TabsContent>
-      
-      <TabsContent value="location" className="mt-6">
-        <div className="flex items-center gap-2 mb-4 text-lg">
-            <MapPin className="h-6 w-6" />
-            <h3>{car.location_text}</h3>
-        </div>
-        <MapView latitude={car.latitude} longitude={car.longitude} />
-      </TabsContent>
-    </Tabs>
-  );
+    );
 } 
