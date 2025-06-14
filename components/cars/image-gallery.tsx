@@ -5,11 +5,13 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ImageGalleryProps {
-  images: string[];
+  images?: string[];
 }
 
-export function ImageGallery({ images }: ImageGalleryProps) {
-  const [selectedImage, setSelectedImage] = useState(images?.[0] || '/images/placeholder-car.png');
+export function ImageGallery({ images = [] }: ImageGalleryProps) {
+  const [selectedImage, setSelectedImage] = useState(() => {
+    return (images && images.length > 0) ? images[0] : '/images/placeholder-car.png';
+  });
 
   return (
     <div className="space-y-6">
@@ -26,7 +28,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
       </div>
       
       {/* Thumbnail Grid - Shopify style */}
-      {images.length > 1 && (
+      {images && images.length > 1 && (
         <div className="grid grid-cols-4 gap-3">
           {images.slice(0, 8).map((image, index) => (
             <button
@@ -50,7 +52,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
           ))}
           
           {/* Show more indicator if more than 8 images */}
-          {images.length > 8 && (
+          {images && images.length > 8 && (
             <div className="relative aspect-square bg-muted border border-border flex items-center justify-center">
               <span className="text-sm font-medium text-muted-foreground">
                 +{images.length - 8}

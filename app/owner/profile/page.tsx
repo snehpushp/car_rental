@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { OwnerProfileForm } from "@/components/owner/profile-form";
 
 export default async function OwnerProfilePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

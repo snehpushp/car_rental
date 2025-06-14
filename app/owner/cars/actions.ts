@@ -18,7 +18,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
 
 
 async function uploadImages(files: File[], ownerId: string): Promise<string[]> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const imageUrls: string[] = [];
     for (const file of files) {
         const filePath = `${ownerId}/${Date.now()}-${file.name}`;
@@ -34,7 +34,7 @@ async function uploadImages(files: File[], ownerId: string): Promise<string[]> {
 }
 
 export async function createCarAction(values: CarFormValues) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Authentication required.");
 
@@ -71,7 +71,7 @@ export async function createCarAction(values: CarFormValues) {
 }
 
 export async function updateCarAction(carId: string, values: CarFormValues) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Authentication required.");
 

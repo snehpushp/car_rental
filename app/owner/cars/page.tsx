@@ -9,7 +9,7 @@ import { formatCurrency } from '@/lib/utils';
 import Image from 'next/image';
 
 async function CarsTable() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

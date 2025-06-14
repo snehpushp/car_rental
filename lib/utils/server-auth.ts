@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { API_ROUTES } from '@/lib/config/routes';
 
 export async function getServerUser() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerComponentClient({ cookies: () => cookieStore });
     
     const { data: { session } } = await supabase.auth.getSession();

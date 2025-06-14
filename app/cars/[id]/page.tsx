@@ -51,8 +51,9 @@ const specIconMapping = {
     safety_rating: <Shield className="h-5 w-5 text-muted-foreground" />,
 };
 
-export default async function CarDetailsPage({ params }: { params: { id: string } }) {
-    const car = await getCarDetails(params.id);
+export default async function CarDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const car = await getCarDetails(id);
     const user = await getServerUser();
 
     if (!car) {

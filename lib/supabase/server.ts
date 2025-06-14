@@ -5,8 +5,8 @@ import { cookies } from 'next/headers';
 /**
  * Create Supabase client for Server Components.
  */
-export const createClient = () => {
-  const cookieStore = cookies();
+export const createClient = async () => {
+  const cookieStore = await cookies();
   return createServerComponentClient({
     cookies: () => cookieStore,
   });
@@ -15,8 +15,8 @@ export const createClient = () => {
 /**
  * Get Supabase client for API routes with user context
  */
-export const getSupabaseRouteHandler = () => {
-  const cookieStore = cookies();
+export const getSupabaseRouteHandler = async () => {
+  const cookieStore = await cookies();
   return createRouteHandlerClient({ cookies: () => cookieStore });
 }
 

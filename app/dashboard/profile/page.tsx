@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ProfileForm } from "@/components/dashboard/profile-form";
 
 export default async function ProfilePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

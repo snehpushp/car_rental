@@ -6,14 +6,14 @@ import { notFound } from "next/navigation";
 import { Car } from "@/lib/types/database";
 
 interface EditCarPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
 async function getCarData(carId: string): Promise<Car | null> {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const cookieStore = await cookies();
+    const supabase = await createClient();
     
     const { data: car, error } = await supabase
         .from('cars')
@@ -31,14 +31,15 @@ async function getCarData(carId: string): Promise<Car | null> {
 
 
 export default async function EditCarPage({ params }: EditCarPageProps) {
-  const carData = await getCarData(params.id);
+  const { id } = await params;
+  const carData = await getCarData(id);
 
   if (!carData) {
     notFound();
   }
 
   // Bind the carId to the update action
-  const updateActionWithId = updateCarAction.bind(null, params.id);
+  const updateActionWithId = updateCarAction.bind(null, id);
 
   return (
     <div className="min-h-screen bg-gray-50/50">

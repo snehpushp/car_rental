@@ -11,7 +11,7 @@ import { requireRole } from '@/lib/utils/api-helpers';
 import { PageSection } from '@/components/layout/page-section';
 
 async function getDashboardData() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   // First, ensure the user is an authenticated owner.
   const auth = await requireRole('owner');
   // requireRole returns a Response object on failure, which we can't use directly in a server component.
@@ -25,7 +25,7 @@ async function getDashboardData() {
   }
   const ownerId = auth.profile.id;
 
-  const supabase = createClient(cookieStore);
+  const supabase = await createClient();
 
   // 1. Get owner's car IDs
   const { data: ownerCars, error: ownerCarsError } = await supabase
