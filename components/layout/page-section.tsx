@@ -13,7 +13,7 @@ export function PageSection({
 }: PageSectionProps) {
   return (
     <Comp
-      className={cn('py-20 sm:py-24 lg:py-32', className)}
+      className={cn('py-36 sm:py-24 lg:py-32', className)}
       {...props}
     >
       <div className="container mx-auto px-6 sm:px-8 lg:px-12">

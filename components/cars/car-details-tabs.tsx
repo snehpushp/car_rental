@@ -91,7 +91,7 @@ export function CarDetailsTabs({ car }: CarDetailsTabsProps) {
                             </div>
                         ) : (
                             <div className="text-center py-8">
-                                <p className="text-muted-foreground">No reviews yet. Be the first to review this car!</p>
+                                <p className="text-muted-foreground">No reviews yet.</p>
                             </div>
                         )}
                     </div>
