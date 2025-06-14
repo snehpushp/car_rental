@@ -11,28 +11,28 @@ const slides = [
     icon: <Car className="h-8 w-8 text-white" />,
     title: "Find Your Perfect Ride",
     description: "Browse thousands of cars from trusted hosts in your area. From economy to luxury, find the perfect vehicle for any occasion.",
-    image: "https://images.unsplash.com/photo-1549924231-f129b911e442?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+    image: "/slide1.webp"
   },
   {
     id: 2,
     icon: <Users className="h-8 w-8 text-white" />,
     title: "Earn Money Sharing Your Car",
     description: "Turn your idle car into income. List your vehicle and start earning money from other drivers in your community.",
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2126&q=80"
+    image: "/slide2.webp"
   },
   {
     id: 3,
     icon: <Shield className="h-8 w-8 text-white" />,
     title: "Safe & Secure Platform",
     description: "Every trip is protected with comprehensive insurance coverage and 24/7 customer support for peace of mind.",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+    image: "/slide3.webp"
   },
   {
     id: 4,
     icon: <Clock className="h-8 w-8 text-white" />,
     title: "Book Instantly",
     description: "Skip the rental counter. Book instantly, unlock with your phone, and start your journey in minutes.",
-    image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80"
+    image: "/slide4.webp"
   }
 ];
 

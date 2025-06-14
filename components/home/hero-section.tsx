@@ -58,7 +58,7 @@ export function HeroSection() {
       <div className="absolute inset-0 z-0">
         {/* Light mode image */}
         <img
-            src="/light_mode_hero.png"
+            src="/light_mode_hero.webp"
             alt="Sports car - Light mode"
             className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ease-in-out ${
               isDark ? 'opacity-0' : 'opacity-100'
@@ -67,7 +67,7 @@ export function HeroSection() {
         
         {/* Dark mode image */}
         <img
-            src="/dark_mode_hero.png"
+            src="/dark_mode_hero.webp"
             alt="Sports car - Dark mode"
             className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ease-in-out ${
               isDark ? 'opacity-100' : 'opacity-0'
