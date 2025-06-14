@@ -14,7 +14,7 @@ async function getFeaturedCars(): Promise<Car[]> {
     ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     : `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 
-  const response = await fetch(`${baseUrl}/api/cars?limit=8`, {
+  const response = await fetch(`${baseUrl}/api/cars?limit=9`, {
     next: { revalidate: 3600 }, // Revalidate every hour
   });
 
@@ -73,7 +73,7 @@ FeaturedCars.Skeleton = function FeaturedCarsSkeleton() {
                   </Link>
                 </Button>
             </div>
-            <CarGrid isLoading={true} skeletonCount={8} />
+            <CarGrid isLoading={true} skeletonCount={9} />
         </div>
     );
 } 
