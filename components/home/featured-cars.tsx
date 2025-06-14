@@ -5,10 +5,14 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 async function getFeaturedCars(): Promise<Car[]> {
-  // On the server, we need to use the full URL
-  const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL 
+  
+
+  const baseUrl = process.env.NEXT_PUBLIC_VERCEL_ENV == null ||
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+    ? "http://localhost:3000"
+    : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
     ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : 'http://localhost:3000';
+    : `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 
   const response = await fetch(`${baseUrl}/api/cars?limit=8`, {
     next: { revalidate: 3600 }, // Revalidate every hour

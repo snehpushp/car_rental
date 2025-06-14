@@ -11,9 +11,12 @@ import { getServerUser } from "@/lib/utils/server-auth";
 import { MapView } from "@/components/maps/map-view";
 
 async function getCarDetails(id: string): Promise<Car | null> {
-    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-        ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-        : 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_ENV == null ||
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+      ? "http://localhost:3000"
+      : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 
     const response = await fetch(`${baseUrl}/api/cars/${id}`, {
         next: { revalidate: 3600 },

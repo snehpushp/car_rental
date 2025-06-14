@@ -94,6 +94,11 @@ export function FilterSidebar({ showHeader = true }: FilterSidebarProps) {
 
   // Debounced search handler
   useEffect(() => {
+    // Prevent re-triggering search on pagination or other filter changes
+    if ((searchParams.get('search') || '') === searchValue) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       if (searchValue) {
